@@ -21,6 +21,8 @@ dev-dependencies = [
   "black>=24",
   "isort>=5",
   "mypy>=1.11",
+  "pre-commit>=3.8",
+  "types-PyYAML>=6.0",
 ]
 cache-dir = ".uv_cache"
 index-url = "https://mirrors.ustc.edu.cn/pypi/web/simple"

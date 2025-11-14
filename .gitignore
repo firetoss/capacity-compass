@@ -1,2 +1,12 @@
-.DS_Store
+# Project-specific ignores
+.uv_cache/
+.venv/
+__pycache__/
+*.pyc
+.cache/
+.mypy_cache/
+pytest_cache/
 .vscode
+
+# OS
+.DS_Store

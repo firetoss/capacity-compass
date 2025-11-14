@@ -21,6 +21,7 @@ DEPLOY_PRIORITY = {
 @dataclass
 class RankedCandidate:
     """Serializable representation used by后续阶段/输出。"""
+
     gpu_id: str
     cards_needed: int
     cards_mem: int

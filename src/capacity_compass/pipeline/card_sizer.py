@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -18,6 +19,7 @@ PRECISION_FIELD = {
 @dataclass
 class HardwareEvaluation:
     """Result per GPU：显存/算力卡数、冗余与提示。"""
+
     gpu: GPUConfig
     cards_mem: int
     cards_compute: Optional[int]
@@ -35,16 +37,15 @@ def size_cards(
 ) -> HardwareEvaluation:
     """Take显存与算力上界，向上取整卡数，见设计 §4.4。"""
     notes: List[str] = []
-    mem_per_card = gpu.memory_gb * 1e9
-    # 向上取整：ceil(total / per_card) = -(-a // b)
-    cards_mem = max(1, -(-total_mem_bytes // mem_per_card))
+    mem_per_card = int(gpu.memory_gb * 1e9)
+    cards_mem = max(1, math.ceil(total_mem_bytes / mem_per_card))
 
     perf_field = PRECISION_FIELD.get(eval_precision)
     cards_compute: Optional[int] = None
     if perf_field and gpu.perf:
         perf_value = getattr(gpu.perf, perf_field)
         if perf_value:
-            cards_compute = max(1, -(-required_compute_Tx // perf_value))
+            cards_compute = max(1, math.ceil(required_compute_Tx / perf_value))
     if cards_compute is None:
         notes.append("算力数据缺失，仅按显存估算")
 

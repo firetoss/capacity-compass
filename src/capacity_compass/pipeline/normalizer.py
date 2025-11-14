@@ -24,6 +24,7 @@ class EvaluationRequest(BaseModel):
 @dataclass
 class NormalizedRequest:
     """Internal normalized request used by downstream pipeline stages."""
+
     model: ModelConfig
     eval_precision: str
     requested_context_len: Optional[int]
@@ -133,10 +134,16 @@ def _normalize_vendor_scope(vendors: Optional[List[str]]) -> Optional[List[str]]
     """Remove重复并保持用户给定顺序。"""
     if not vendors:
         return None
-    seen = []
+    seen: List[str] = []
+    lowered: set[str] = set()
     for vendor in vendors:
-        if vendor and vendor.lower() not in {v.lower() for v in seen}:
-            seen.append(vendor)
+        if not vendor:
+            continue
+        key = vendor.lower()
+        if key in lowered:
+            continue
+        lowered.add(key)
+        seen.append(vendor)
     return seen
 
 
