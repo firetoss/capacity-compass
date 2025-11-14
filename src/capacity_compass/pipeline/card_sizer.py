@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from dataclasses import dataclass
 from typing import List, Optional
@@ -14,6 +15,8 @@ PRECISION_FIELD = {
     "fp8": "fp8_tflops",
     "int8": "int8_tops",
 }
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -36,6 +39,7 @@ def size_cards(
     required_compute_Tx: float,
 ) -> HardwareEvaluation:
     """Take显存与算力上界，向上取整卡数，见设计 §4.4。"""
+
     notes: List[str] = []
     mem_per_card = int(gpu.memory_gb * 1e9)
     cards_mem = max(1, math.ceil(total_mem_bytes / mem_per_card))
@@ -48,12 +52,27 @@ def size_cards(
             cards_compute = max(1, math.ceil(required_compute_Tx / perf_value))
     if cards_compute is None:
         notes.append("算力数据缺失，仅按显存估算")
+        logger.warning(
+            "compute spec missing for gpu=%s precision=%s; relying on memory-bound sizing",
+            gpu.name,
+            eval_precision,
+        )
 
     cards_needed = max(cards_mem, cards_compute or 0)
     total_mem_available = cards_needed * mem_per_card
     headroom = 0.0
     if total_mem_available:
         headroom = (total_mem_available - total_mem_bytes) / total_mem_available
+
+    logger.debug(
+        "size_cards gpu=%s precision=%s cards_mem=%s cards_compute=%s cards_needed=%s headroom=%.2f",
+        gpu.name,
+        eval_precision,
+        cards_mem,
+        cards_compute,
+        cards_needed,
+        headroom,
+    )
 
     return HardwareEvaluation(
         gpu=gpu,

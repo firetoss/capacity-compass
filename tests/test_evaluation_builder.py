@@ -54,6 +54,7 @@ def test_evaluation_builder_generates_quick_answer():
     assert chat_summary["primary"]["device"] == "GPU-A"
     assert evaluation["quick_answer"]["primary"]["device"] == "GPU-A"
     assert evaluation["scenes"]["chat"]["guide"]["title"] == "对话问答"
+    assert evaluation["disclaimers"]
 
 
 def test_evaluation_builder_adds_context_clamp_tip():
@@ -76,3 +77,23 @@ def test_evaluation_builder_adds_context_clamp_tip():
     chat_summary = evaluation["scenes"]["chat"]["sales_summary"]
     assert any("上下文" in tip for tip in chat_summary["tips"])
     assert chat_summary["switch_notice"] is not None
+
+
+def test_evaluation_builder_adds_disclaimer_when_no_candidates():
+    models = ModelsRegistry(config_loader.load_models())
+    scenarios = config_loader.load_scenarios()
+
+    req = EvaluationRequest(model="Qwen3-4B")
+    normalized = normalize_request(req, models)
+    preset = scenarios["chat"]
+    requirement = _dummy_requirement(8192)
+
+    evaluation = build_evaluation(
+        normalized,
+        {"chat": preset},
+        {"chat": requirement},
+        {"chat": []},
+    )
+
+    disclaimers = evaluation["disclaimers"]
+    assert any("暂无满足" in text for text in disclaimers)

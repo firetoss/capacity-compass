@@ -1,0 +1,201 @@
+# SageScale / 智算参谋
+# e2e_test_cases.yaml
+#
+# 用途：驱动端到端测试，验证算力评估与设备推荐的核心功能是否按设计实现。
+# 注意：
+# - 本文件中的 GPU ID 和模型名需要与实际的 hardware.yaml / models_*.yaml 对齐；
+# - 目前主要用于“功能正确性”验证，后续可以根据真实压测数据进行调整和扩展；
+# - expectations.assertions 中的 type 由测试代码解释实现。
+
+- id: qwen3_8b_chat_fp16_nvidia
+  description: "Qwen3-8B-Instruct, 8K chat, fp16, 仅 NVIDIA 设备"
+  request:
+    model_name: "Qwen/Qwen3-8B-Instruct"
+    max_context_len: 8192
+    precision: "fp16"
+    vendor_scope: ["NVIDIA"]
+  expectations:
+    status: "ok"
+    assertions:
+      # 基本结构检查
+      - type: "scenarios_present"
+        scenarios: ["chat", "rag", "writer"]
+      - type: "scenario_has_primary"
+        scenario: "chat"
+
+      # 至少有一张主力数据中心卡出现在 chat 场景的 primary 中
+      - type: "primary_contains_any_gpu_id"
+        scenario: "chat"
+        gpu_ids:
+          - "nvidia_a100_40g_sxm"
+          - "nvidia_h20_96g"
+          - "nvidia_h100_80g"
+
+      # 对 A100 40G 的卡数约束：不应需要超过 2 张卡
+      - type: "max_cards_needed"
+        scenario: "chat"
+        gpu_id: "nvidia_a100_40g_sxm"
+        value: 2
+
+- id: qwen3_0_6b_chat_fp16_entry_gpu
+  description: "Qwen3-0.6B, 4K chat, fp16, 偏向入门级 NVIDIA 卡"
+  request:
+    model_name: "Qwen/Qwen3-0.6B"
+    max_context_len: 4096
+    precision: "fp16"
+    vendor_scope: ["NVIDIA"]
+  expectations:
+    status: "ok"
+    assertions:
+      - type: "scenarios_present"
+        scenarios: ["chat"]
+      - type: "scenario_has_primary"
+        scenario: "chat"
+
+      # 小模型在 4K 场景下，T4/V100 等 16G 卡应该可以部署
+      - type: "primary_contains_any_gpu_id"
+        scenario: "chat"
+        gpu_ids:
+          - "nvidia_t4_16g"
+          - "nvidia_v100_16g"
+
+      # 对小模型来说，大卡(H20/H100)不应是唯一的 primary 选项
+      - type: "primary_not_only_heavy_gpus"
+        scenario: "chat"
+        heavy_gpu_ids:
+          - "nvidia_h20_96g"
+          - "nvidia_h100_80g"
+
+- id: qwen3_8b_rag_32k_bf16_long_ctx
+  description: "Qwen3-8B-Instruct, 32K RAG, bf16, 长上下文场景"
+  request:
+    model_name: "Qwen/Qwen3-8B-Instruct"
+    max_context_len: 32768
+    precision: "bf16"
+    vendor_scope: ["NVIDIA", "Huawei", "Kunlunxin"]
+  expectations:
+    status: "ok"
+    assertions:
+      - type: "scenarios_present"
+        scenarios: ["rag"]
+      - type: "scenario_has_primary"
+        scenario: "rag"
+
+      # 长上下文 RAG 场景下，优选应倾向大显存卡（如 64G/80G/96G）
+      - type: "primary_contains_any_gpu_id"
+        scenario: "rag"
+        gpu_ids:
+          - "nvidia_h20_96g"
+          - "nvidia_a100_80g_sxm"
+          - "huawei_ascend_910b_64g"
+          - "kunlunxin_p800_96g"
+
+      # 16G 入门卡不应出现在 RAG primary 中
+      - type: "primary_not_contains_gpu_id"
+        scenario: "rag"
+        gpu_ids:
+          - "nvidia_t4_16g"
+          - "nvidia_v100_16g"
+
+- id: qwen3_vl_8b_rag_text_vision
+  description: "Qwen3-VL-8B-Instruct, text_vision, 8K RAG 场景"
+  request:
+    model_name: "Qwen/Qwen3-VL-8B-Instruct"
+    max_context_len: 8192
+    precision: "bf16"
+    vendor_scope: ["NVIDIA"]
+  expectations:
+    status: "ok"
+    assertions:
+      - type: "scenarios_present"
+        scenarios: ["rag"]
+      - type: "scenario_has_primary"
+        scenario: "rag"
+
+      # 多模态 text_vision 模型在 RAG 场景应偏向算力/显存较强的卡型
+      - type: "primary_contains_any_gpu_id"
+        scenario: "rag"
+        gpu_ids:
+          - "nvidia_a100_40g_sxm"
+          - "nvidia_h20_96g"
+          - "nvidia_h100_80g"
+
+      # 校验多模态 compute_multiplier 生效（测试实现时可比较与纯文本 8B 的 required_flops）
+      - type: "check_modality_multiplier_applied"
+        scenario: "rag"
+        expect_modality: "text_vision"
+
+- id: deepseek_r1_distill_qwen_7b_chat
+  description: "DeepSeek-R1-Distill-Qwen-7B, 8K chat, bf16"
+  request:
+    model_name: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
+    max_context_len: 8192
+    precision: "bf16"
+    vendor_scope: ["NVIDIA", "Huawei"]
+  expectations:
+    status: "ok"
+    assertions:
+      - type: "scenarios_present"
+        scenarios: ["chat"]
+      - type: "scenario_has_primary"
+        scenario: "chat"
+
+      # DeepSeek 蒸馏模型与 Qwen3 相似规模，推荐逻辑应类似
+      - type: "primary_contains_any_gpu_id"
+        scenario: "chat"
+        gpu_ids:
+          - "nvidia_a100_40g_sxm"
+          - "huawei_ascend_910b_64g"
+
+- id: deepseek_r1_full_long_ctx_moe
+  description: "DeepSeek-R1 全参数模型, 32K RAG, bf16, MoE 长上下文场景"
+  request:
+    model_name: "deepseek-ai/DeepSeek-R1"
+    max_context_len: 32768
+    precision: "bf16"
+    vendor_scope: ["NVIDIA", "Huawei"]
+  expectations:
+    status: "ok"
+    assertions:
+      - type: "scenarios_present"
+        scenarios: ["rag"]
+      - type: "scenario_has_primary"
+        scenario: "rag"
+
+      # 全量 R1 模型仅大卡能够承载，应排除小显存卡
+      - type: "primary_contains_any_gpu_id"
+        scenario: "rag"
+        gpu_ids:
+          - "nvidia_h20_96g"
+          - "nvidia_h100_80g"
+          - "huawei_ascend_910b_64g"
+      - type: "primary_not_contains_gpu_id"
+        scenario: "rag"
+        gpu_ids:
+          - "nvidia_t4_16g"
+          - "nvidia_v100_16g"
+
+      # 可选：验证 MoE 有效参数估算路径被触发（通过 notes 或标志字段）
+      - type: "check_moe_effective_params_used"
+        scenario: "rag"
+        expect_is_moe: true
+
+- id: unknown_model_param_only
+  description: "仅给定参数量的匿名模型，用于验证 param_only 路径"
+  request:
+    model_name: "unknown/model"
+    param_count_b: 3.0
+    max_context_len: 4096
+    precision: "fp16"
+    vendor_scope: ["NVIDIA"]
+  expectations:
+    status: "ok"
+    assertions:
+      - type: "scenarios_present"
+        scenarios: ["chat"]
+      - type: "scenario_has_primary"
+        scenario: "chat"
+
+      # 此用例主要验证：在 models_* 中找不到 model_name 时，仍能按 param_count_b 粗估并给出推荐
+      - type: "check_param_only_fallback_used"
+        scenario: "chat"

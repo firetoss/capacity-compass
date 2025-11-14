@@ -1,0 +1,205 @@
+cases:
+  - id: qwen3_8b_chat_dense
+    description: "Qwen3-8B chat dense 测试（bf16, 16K 上下文）"
+    model:
+      family: Qwen3
+      model_name: Qwen3-8B-Instruct
+      param_count_b: 8.0
+      hidden_size: 4096
+      num_hidden_layers: 32
+      num_attention_heads: 32
+      num_key_value_heads: 32 # 测试用：设为与 num_attention_heads 相同
+      head_dim: 128
+      max_position_embeddings: 32768
+      is_moe: false
+      modality: text
+      recommended_kv_dtype: bf16
+    normalized_request:
+      eval_precision: bf16
+      requested_context_len: 16000
+      final_context_len: 16000 # 不截断
+      notes: []
+      is_anonymous_model: false
+    scenario_preset:
+      label: chat
+      default_context_len: 8192
+      target_latency_ms: 1500
+      target_concurrency_per_gpu:
+        small_model: 2
+        medium_model: 1
+        large_model: 1
+      compute_multiplier:
+        text: 1.0
+        text_vision: 1.2
+        omni: 1.3
+    estimation_config:
+      dtype_bytes:
+        bf16: 2
+        fp16: 2
+        fp8: 1
+      overhead_ratio_default: 0.15
+      alpha_default: 0.25
+      moe_effective_factor:
+        default: 0.1
+        DeepSeek-R1: 0.05
+      scale_thresholds_b:
+        small_max: 10
+        medium_max: 50
+      kv_dtype_fallback_order: [bf16, fp16, fp8]
+    expectations:
+      # 规模 8B <= small_max(10)，走 small_model 并发 = 2
+      context_len: 16000
+      context_clamped: false
+      # weights_mem_bytes = 8B * 1e9 * 2 bytes = 16,000,000,000
+      weights_mem_bytes: 16000000000
+      # kv_mem_bytes = C * T * L * H_kv * D * 2(K+V) * B_kv
+      #              = 2 * 16000 * 32 * 32 * 128 * 2 * 2
+      #              = 16,777,216,000
+      kv_mem_bytes: 16777216000
+      # total_mem_bytes = (weights + kv) * (1 + 0.15)
+      #                 = (16,000,000,000 + 16,777,216,000) * 1.15
+      #                 = 37,693,798,400
+      total_mem_bytes: 37693798400
+      # 计算需求:
+      #   target_latency_s = 1.5
+      #   S_tokens = C * (T / target_latency_s) * alpha
+      #            = 2 * (16000 / 1.5) * 0.25 = 8000 / 1.5 = 5333.333...
+      #   required_flops = 2 * P * S_tokens
+      #                  = 2 * 8e9 * 5333.333... ≈ 8.533333333e13
+      #   required_compute_Tx = required_flops / 1e12 ≈ 85.3333333333
+      required_compute_Tx: 85.33333333333333
+      notes_contains: []
+
+  - id: deepseek_r1_writer_moe
+    description: "DeepSeek-R1 MoE writer 场景（bf16, 32K 上下文，MoE 有效参数折算）"
+    model:
+      family: DeepSeek-R1
+      model_name: DeepSeek-R1
+      param_count_b: 671.0
+      hidden_size: 7168
+      num_hidden_layers: 61
+      num_attention_heads: 128
+      num_key_value_heads: 16
+      head_dim: 128
+      max_position_embeddings: 40960
+      is_moe: true
+      modality: text
+      # recommended_kv_dtype 未指定 -> 使用 kv_dtype_fallback_order 的首选 bf16
+    normalized_request:
+      eval_precision: bf16
+      requested_context_len: 32768
+      final_context_len: 32768
+      notes: []
+      is_anonymous_model: false
+    scenario_preset:
+      label: writer
+      default_context_len: 32768
+      target_latency_ms: 3000
+      target_concurrency_per_gpu:
+        large_model: 1
+      compute_multiplier:
+        text: 1.0
+    estimation_config:
+      dtype_bytes:
+        bf16: 2
+      overhead_ratio_default: 0.2
+      alpha_default: 0.2
+      moe_effective_factor:
+        default: 0.2
+        DeepSeek-R1: 0.055 # 671B -> 有效约 37B
+      scale_thresholds_b:
+        small_max: 10
+        medium_max: 50
+      kv_dtype_fallback_order: [bf16]
+    expectations:
+      # param_count_b=671 > medium_max=50 -> large_model 并发 = 1
+      context_len: 32768
+      context_clamped: false
+      # weights_mem_bytes = 671 * 1e9 * 2 = 1,342,000,000,000
+      weights_mem_bytes: 1342000000000
+      # kv_mem_bytes = 1 * 32768 * 61 * 16 * 128 * 2 * 2 = 16,374,562,816
+      kv_mem_bytes: 16374562816
+      # total_mem_bytes = (1,342,000,000,000 + 16,374,562,816) * 1.2
+      #                 = 1,358,374,562,816 * 1.2 ≈ 1,630,049,475,379
+      total_mem_bytes: 1630049475379
+      # 计算需求（使用 MoE 有效参数）:
+      #   effective_params_b = 671 * 0.055 = 36.905
+      #   P_eff = 36.905e9
+      #   target_latency_s = 3.0
+      #   S_tokens = 1 * (32768 / 3) * 0.2 = 32768 / 15 ≈ 2184.5333
+      #   required_flops = 2 * P_eff * S_tokens
+      #                  ≈ 1.612404053333333e14
+      #   required_compute_Tx ≈ 161.2404053333
+      required_compute_Tx: 161.24040533333333
+      notes_contains: []
+
+  - id: qwen3_vl_8b_rag_text_vision
+    description: "Qwen3-VL-8B-Instruct 多模态 text_vision, 8K RAG 场景"
+    model:
+      family: Qwen3
+      model_name: Qwen3-VL-8B-Instruct
+      param_count_b: 9.0 # 模型卡标称 9B
+      hidden_size: 4096
+      num_hidden_layers: 36
+      num_attention_heads: 32
+      num_key_value_heads: 8
+      head_dim: 128
+      max_position_embeddings: 262144
+      is_moe: false
+      modality: text_vision
+      recommended_kv_dtype: bf16
+    normalized_request:
+      eval_precision: bf16
+      requested_context_len: 8192
+      final_context_len: 8192
+      notes: []
+      is_anonymous_model: false
+    scenario_preset:
+      label: rag
+      default_context_len: 32768
+      target_latency_ms: 2000
+      target_concurrency_per_gpu:
+        small_model: 4
+        medium_model: 2
+        large_model: 1
+      compute_multiplier:
+        text: 1.0
+        text_vision: 1.3
+        omni: 1.5
+    estimation_config:
+      dtype_bytes:
+        bf16: 2
+        fp16: 2
+        fp8: 1
+      overhead_ratio_default: 0.15
+      alpha_default: 0.25
+      moe_effective_factor:
+        default: 0.1
+        DeepSeek-R1: 0.055
+      scale_thresholds_b:
+        small_max: 10
+        medium_max: 50
+      kv_dtype_fallback_order: [bf16, fp16, fp8]
+    expectations:
+      # param_count_b=9 <= small_max=10 -> small_model 并发 = 4
+      context_len: 8192
+      context_clamped: false
+      # weights_mem_bytes = 9 * 1e9 * 2 = 18,000,000,000
+      weights_mem_bytes: 18000000000
+      # 场景默认上下文 32768 > 请求 8192，因此 context_len=32768
+      context_len: 32768
+      # kv_mem_bytes = 4 * 32768 * 36 * 8 * 128 * 2 * 2 = 19,327,352,832
+      kv_mem_bytes: 19327352832
+      # total_mem_bytes = (18,000,000,000 + 19,327,352,832) * 1.15
+      #                 = 42,926,455,756
+      total_mem_bytes: 42926455756
+      # 计算需求:
+      #   target_latency_s = 2.0
+      #   S_tokens = C * (32768 / 2) * 0.25 = 16384
+      #   P = 9e9
+      #   base_required_flops = 2 * 9e9 * 16384 = 2.94912e14
+      #   modality=text_vision, compute_multiplier=1.3
+      #   required_flops = 3.833856e14
+      #   required_compute_Tx = 383.3856
+      required_compute_Tx: 383.3856
+      notes_contains: []

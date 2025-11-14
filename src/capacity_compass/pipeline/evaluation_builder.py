@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional
 
@@ -32,6 +33,12 @@ SCENE_GUIDES = {
 }
 
 DEFAULT_TIPS = ["本结果为快速粗略估算，仅供参考；实际以压测为准"]
+GENERAL_DISCLAIMERS = [
+    "本评估为快速预估结果，需结合压测和厂商建议后再定型。",
+    "多卡互联、量化策略与软件版本会影响表现，交付前请二次确认。",
+]
+
+logger = logging.getLogger(__name__)
 
 
 def build_evaluation(
@@ -40,12 +47,17 @@ def build_evaluation(
     requirements: Dict[str, RequirementResult],
     ranked_candidates: Dict[str, List[RankedCandidate]],
 ) -> Dict[str, Any]:
+    """Assemble展示层结构，包含 quick_answer / scenes / raw_evaluation。"""
+
     raw = {
         "model_profile": normalized_request.model.model_dump(),
         "scenarios": {},
     }
     scenes: Dict[str, Any] = {}
     quick_answer = None
+    disclaimers: List[str] = list(GENERAL_DISCLAIMERS)
+    if normalized_request.is_anonymous_model:
+        _append_disclaimer(disclaimers, "模型参数由用户提供，结果仅作粗略估算。")
 
     for scene, requirement in requirements.items():
         preset = presets.get(scene)
@@ -71,10 +83,25 @@ def build_evaluation(
         if scene == "chat" and primary and not quick_answer:
             quick_answer = _build_quick_answer(scene_summary["sales_summary"])
 
+        if not candidates:
+            _append_disclaimer(
+                disclaimers,
+                f"{preset.label} 场景暂无满足显存与精度要求的硬件，请联系服务商确认。",
+            )
+
+        logger.info(
+            "scene=%s primary_device=%s cards=%s has_candidates=%s",
+            scene,
+            primary["device"] if primary else None,
+            primary["cards"] if primary else None,
+            bool(candidates),
+        )
+
     return {
         "quick_answer": quick_answer,
         "scenes": scenes,
         "raw_evaluation": raw,
+        "disclaimers": disclaimers,
     }
 
 
@@ -85,6 +112,7 @@ def _build_scene_summary(
     requirement: RequirementResult,
     candidates: List[RankedCandidate],
 ) -> Dict[str, Any]:
+    """Craft sales summary + guide for单个场景（设计 §4.6）。"""
     primary = candidates[0] if candidates else None
     alternatives = candidates[1:3]
 
@@ -110,6 +138,7 @@ def _build_scene_summary(
 
 
 def _experience_label(preset: ScenarioPreset) -> str:
+    """Map latency目标到易懂的体验标签。"""
     t = preset.target_latency_ms
     if t <= 1000:
         return "预计响应：快"
@@ -121,6 +150,7 @@ def _experience_label(preset: ScenarioPreset) -> str:
 def _format_candidate(
     candidate: Optional[RankedCandidate], preset: ScenarioPreset
 ) -> Optional[Dict[str, Any]]:
+    """Convert候选 GPU 为销售可读结构。"""
     if not candidate:
         return None
     reason = _reason_from_candidate(candidate)
@@ -133,6 +163,7 @@ def _format_candidate(
 
 
 def _reason_from_candidate(candidate: RankedCandidate) -> str:
+    """Return简短理由，优先显存/成熟度/价格。"""
     support = candidate.deploy_support
     if support in {"native", "excellent"}:
         return "显存合适、推理稳定"
@@ -146,6 +177,7 @@ def _reason_from_candidate(candidate: RankedCandidate) -> str:
 
 
 def _build_quick_answer(summary: Dict[str, Any]) -> Dict[str, Any]:
+    """提炼 chat 场景的答案用于“最小响应示例”。"""
     return {
         "primary": summary.get("primary"),
         "alternatives": summary.get("alternatives"),
@@ -153,3 +185,11 @@ def _build_quick_answer(summary: Dict[str, Any]) -> Dict[str, Any]:
         "confidence": summary.get("confidence"),
         "switch_notice": summary.get("switch_notice"),
     }
+
+
+def _append_disclaimer(disclaimers: List[str], text: Optional[str]) -> None:
+    """Add text to disclaimers while keeping顺序且避免重复。"""
+    if not text:
+        return
+    if text not in disclaimers:
+        disclaimers.append(text)

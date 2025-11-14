@@ -7,7 +7,9 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-try:
+import httpx
+
+try:  # pragma: no cover - optional extra
     from openai import OpenAI
 except ImportError:  # pragma: no cover - handled via runtime guard
     OpenAI = None  # type: ignore
@@ -31,6 +33,8 @@ def generate_llm_summary(
     base_url: Optional[str] = None,
     referer: Optional[str] = None,
     site_title: Optional[str] = None,
+    timeout_seconds: float = 30.0,
+    http_proxy: Optional[str] = None,
 ) -> str:
     """Call OpenRouter-compatible endpoint to produce human-readable summary."""
 
@@ -45,7 +49,17 @@ def generate_llm_summary(
     context_payload = _extract_payload(evaluation, disclaimers or [])
     content = json.dumps(context_payload, ensure_ascii=False, indent=2)
 
-    client = OpenAI(base_url=base_url or DEFAULT_BASE_URL, api_key=api_key)
+    proxy_url = http_proxy or os.getenv("CAPACITYCOMPASS_HTTP_PROXY")
+    transport = httpx.HTTPTransport(proxy=proxy_url) if proxy_url else None
+    http_client = httpx.Client(
+        transport=transport,
+        timeout=httpx.Timeout(timeout_seconds),
+    )
+    client = OpenAI(
+        base_url=base_url or DEFAULT_BASE_URL,
+        api_key=api_key,
+        http_client=http_client,
+    )
     headers = {}
     referer = referer or os.getenv("OPENROUTER_REFERER")
     site_title = site_title or os.getenv("OPENROUTER_SITE_TITLE")
@@ -54,14 +68,17 @@ def generate_llm_summary(
     if site_title:
         headers["X-Title"] = site_title
 
-    response = client.chat.completions.create(
-        extra_headers=headers or None,
-        model=model,
-        messages=[
-            {"role": "system", "content": prompt_text},
-            {"role": "user", "content": content},
-        ],
-    )
+    try:
+        response = client.chat.completions.create(
+            extra_headers=headers or None,
+            model=model,
+            messages=[
+                {"role": "system", "content": prompt_text},
+                {"role": "user", "content": content},
+            ],
+        )
+    finally:
+        http_client.close()
     if not response.choices:
         raise LLMProviderError("LLM response missing choices")
     message = response.choices[0].message

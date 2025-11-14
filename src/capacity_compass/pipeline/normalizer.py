@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -9,6 +10,8 @@ from pydantic import BaseModel, Field
 
 from ..config_types import ModelConfig
 from ..models_registry import ModelsRegistry
+
+logger = logging.getLogger(__name__)
 
 
 class EvaluationRequest(BaseModel):
@@ -43,6 +46,14 @@ def normalize_request(
 ) -> NormalizedRequest:
     """Normalize request per设计文档 §4.1：模型匹配、Instruct 切换、上下文截断。"""
 
+    logger.debug(
+        "normalizing request model=%s precision=%s context=%s vendors=%s",
+        request.model,
+        request.precision,
+        request.max_context_len,
+        request.vendor_scope,
+    )
+
     model = _resolve_model(request, registry)
     is_anonymous = model.model_name.startswith("__anonymous__")
 
@@ -59,6 +70,14 @@ def normalize_request(
                 f"已切换为 {best.display_name}"
             )
             matched_model = best
+            logger.info(
+                "context %s exceeds %s limit=%s, switched to %s (max=%s)",
+                target_ctx,
+                model.display_name,
+                model.max_context,
+                best.display_name,
+                best.max_context,
+            )
 
     eval_precision = _normalize_precision(request.precision, matched_model)
     vendor_scope = _normalize_vendor_scope(request.vendor_scope)
@@ -72,6 +91,25 @@ def normalize_request(
         notes.append(
             f"请求上下文 {requested_ctx} 超过 {matched_model.display_name} 上限，已截断为 {final_ctx}"
         )
+        logger.warning(
+            "requested context %s exceeds %s max_ctx=%s; clamped to %s",
+            requested_ctx,
+            matched_model.display_name,
+            matched_model.max_context,
+            final_ctx,
+        )
+
+    if is_anonymous:
+        notes.append("模型未在配置表中，按 param_count_b 粗略估算")
+
+    logger.debug(
+        "normalized model=%s precision=%s context=%s vendor_scope=%s anonymous=%s",
+        matched_model.display_name,
+        eval_precision,
+        final_ctx,
+        vendor_scope,
+        is_anonymous,
+    )
 
     return NormalizedRequest(
         model=matched_model,
@@ -91,12 +129,15 @@ def _resolve_model(request: EvaluationRequest, registry: ModelsRegistry) -> Mode
     """Resolve model name/alias; fallback to anonymous if param_count_b provided."""
     target = registry.get(request.model)
     if target:
+        logger.debug("model %s resolved directly to %s", request.model, target.model_name)
         return target
 
     matches = registry.match(request.model)
     if len(matches) == 1:
+        logger.debug("model %s matched alias %s", request.model, matches[0].model_name)
         return matches[0]
     if len(matches) > 1:
+        logger.error("model %s has multiple matches: %s", request.model, matches)
         raise ValueError(f"模型 `{request.model}` 存在多个匹配，请输入完整名称")
 
     if request.param_count_b is not None:
@@ -107,6 +148,11 @@ def _resolve_model(request: EvaluationRequest, registry: ModelsRegistry) -> Mode
 def _build_anonymous_model(request: EvaluationRequest) -> ModelConfig:
     """Construct a lightweight placeholder when用户自报参数量（设计文档 §4.1）。"""
     name = f"__anonymous__::{request.model}"
+    logger.warning(
+        "model `%s` not found; falling back to anonymous profile with params=%sB",
+        request.model,
+        request.param_count_b,
+    )
     return ModelConfig.model_validate(
         {
             "family": "Custom",

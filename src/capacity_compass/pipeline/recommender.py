@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -16,6 +17,8 @@ DEPLOY_PRIORITY = {
     "unknown": 5,
     None: 6,
 }
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -54,6 +57,17 @@ def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandida
         )
 
     ranked.sort(key=_sort_key)
+    if ranked:
+        top = ranked[0]
+        logger.info(
+            "top candidate gpu=%s cards=%s price=%s deploy=%s",
+            top.gpu_name,
+            top.cards_needed,
+            top.total_price,
+            top.deploy_support,
+        )
+    else:
+        logger.warning("no ranked candidates available after evaluation")
     return ranked
 
 

@@ -13,7 +13,10 @@ class EvaluationRequestModel(BaseModel):
     max_context_len: Optional[int] = None
     precision: Optional[str] = None
     vendor_scope: Optional[List[str]] = None
-    generate_summary: bool = False
+    generate_summary: Optional[bool] = Field(
+        default=None,
+        description="Override default LLM summary switch; None uses server setting.",
+    )
 
 
 class EvaluationResponseModel(BaseModel):

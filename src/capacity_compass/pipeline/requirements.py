@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import List
 
 from ..config_types import EstimationConfig, ModelConfig, ScenarioPreset
 from .normalizer import NormalizedRequest
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -50,6 +53,7 @@ def estimate_requirements(
     hidden_size = model.hidden_size or 4096
     concurrency = _target_concurrency(model, preset, estimation)
 
+    # 权重显存：P * B_w（§9：参数量 × 精度字节数）
     weights_mem_bytes = int(
         (model.param_count_b or _fallback_params(hidden_size, num_layers)) * 1e9 * eval_bytes
     )
@@ -62,6 +66,13 @@ def estimate_requirements(
         kv_mem_bytes *= kv_bytes * 2
     else:
         kv_notes.append("结构字段缺失，仅按权重估算")
+        logger.warning(
+            "kv cache skipped due to missing fields (layers=%s kv_heads=%s head_dim=%s) for %s",
+            num_layers,
+            kv_heads,
+            head_dim,
+            model.display_name,
+        )
 
     total_mem_bytes = int(
         (weights_mem_bytes + kv_mem_bytes) * (1 + estimation.overhead_ratio_default)
@@ -72,6 +83,23 @@ def estimate_requirements(
     notes = normalized.notes + kv_notes
     if context_clamped:
         notes.append("上下文按模型上限估算")
+        logger.info(
+            "context for %s limited to %s tokens per preset %s",
+            model.display_name,
+            target_ctx,
+            preset.label,
+        )
+
+    logger.debug(
+        "requirements model=%s preset=%s ctx=%s weights=%.2f GB kv=%.2f GB total=%.2f GB compute=%.2f Tx",
+        model.display_name,
+        preset.label,
+        target_ctx,
+        weights_mem_bytes / 1e9,
+        kv_mem_bytes / 1e9,
+        total_mem_bytes / 1e9,
+        required_compute,
+    )
 
     return RequirementResult(
         context_len=target_ctx,
