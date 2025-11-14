@@ -1,4 +1,10 @@
-"""Utilities to load configuration YAML files into typed objects."""
+"""Utilities to load configuration YAML files into typed objects.
+
+Each helper reads a YAML under ``configs/`` and validates it via the
+``capacity_compass.config_types`` Pydantic models.  The functions purposely do
+not cache results so that callers can decide caching behavior at a higher
+level.
+"""
 
 from __future__ import annotations
 

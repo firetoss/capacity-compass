@@ -12,6 +12,8 @@ from ..models_registry import ModelsRegistry
 
 
 class EvaluationRequest(BaseModel):
+    """User-facing request body (API schema layer)."""
+
     model: str = Field(..., description="User provided model name or alias")
     param_count_b: Optional[float] = None
     max_context_len: Optional[int] = None
@@ -21,6 +23,7 @@ class EvaluationRequest(BaseModel):
 
 @dataclass
 class NormalizedRequest:
+    """Internal normalized request used by downstream pipeline stages."""
     model: ModelConfig
     eval_precision: str
     requested_context_len: Optional[int]
@@ -37,7 +40,7 @@ def normalize_request(
     request: EvaluationRequest,
     registry: ModelsRegistry,
 ) -> NormalizedRequest:
-    """Normalize user request: match model, pick precision, clamp context."""
+    """Normalize request per设计文档 §4.1：模型匹配、Instruct 切换、上下文截断。"""
 
     model = _resolve_model(request, registry)
     is_anonymous = model.model_name.startswith("__anonymous__")
@@ -49,6 +52,7 @@ def normalize_request(
     if target_ctx and matched_model.max_context and target_ctx > matched_model.max_context:
         best = registry.select_best_for_context(matched_model.family, target_ctx)
         if best and best is not matched_model:
+            # 命中基座但上下文超长，自动选“差距最小”的 Instruct 版本（§8.2）
             switch_notice = (
                 f"输入上下文 {target_ctx} 超过 {matched_model.display_name} 上限，"
                 f"已切换为 {best.display_name}"
@@ -83,6 +87,7 @@ def normalize_request(
 
 
 def _resolve_model(request: EvaluationRequest, registry: ModelsRegistry) -> ModelConfig:
+    """Resolve model name/alias; fallback to anonymous if param_count_b provided."""
     target = registry.get(request.model)
     if target:
         return target
@@ -99,6 +104,7 @@ def _resolve_model(request: EvaluationRequest, registry: ModelsRegistry) -> Mode
 
 
 def _build_anonymous_model(request: EvaluationRequest) -> ModelConfig:
+    """Construct a lightweight placeholder when用户自报参数量（设计文档 §4.1）。"""
     name = f"__anonymous__::{request.model}"
     return ModelConfig.model_validate(
         {
@@ -115,6 +121,7 @@ def _build_anonymous_model(request: EvaluationRequest) -> ModelConfig:
 
 
 def _normalize_precision(requested: Optional[str], model: ModelConfig) -> str:
+    """Use用户输入否则模型默认精度；缺省回退到 bf16。"""
     if requested:
         return requested.lower()
     if model.torch_dtype:
@@ -123,6 +130,7 @@ def _normalize_precision(requested: Optional[str], model: ModelConfig) -> str:
 
 
 def _normalize_vendor_scope(vendors: Optional[List[str]]) -> Optional[List[str]]:
+    """Remove重复并保持用户给定顺序。"""
     if not vendors:
         return None
     seen = []
@@ -133,6 +141,7 @@ def _normalize_vendor_scope(vendors: Optional[List[str]]) -> Optional[List[str]]
 
 
 def _clamp_context(context: Optional[int], model: ModelConfig) -> Optional[int]:
+    """Clamp上下文到模型上限（§4.1）。"""
     limit = model.max_context
     if context is None or limit is None:
         return context

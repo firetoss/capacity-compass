@@ -55,6 +55,8 @@ class ModelQuantization(BaseModel):
 
 
 class ModelConfig(BaseModel):
+    """Model metadata loaded from YAML (aligned with design doc §2.2)."""
+
     family: str
     model_name: str
     display_name: str

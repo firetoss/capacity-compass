@@ -1,4 +1,4 @@
-"""Registry for scenario presets (chat, rag, writer, ...)."""
+"""Registry for scenario presets (chat/rag/writer)，来自 configs/scenarios.yaml."""
 
 from __future__ import annotations
 

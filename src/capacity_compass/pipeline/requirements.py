@@ -1,4 +1,4 @@
-"""Stage 2: estimate memory and compute requirements."""
+"""Stage 2: estimate memory & compute (docs §4.2 + 附录 §9)."""
 
 from __future__ import annotations
 
@@ -26,6 +26,8 @@ def estimate_requirements(
     preset: ScenarioPreset,
     estimation: EstimationConfig,
 ) -> RequirementResult:
+    """Compute权重+KV显存与算力需求（附录公式)."""
+
     model = normalized.model
     requested_ctx = normalized.requested_context_len or 0
     default_ctx = preset.default_context_len
@@ -55,6 +57,7 @@ def estimate_requirements(
     kv_mem_bytes = 0
     kv_notes: List[str] = []
     if all([num_layers, kv_heads, head_dim]):
+        # K/V cache 估算：C * T * L * H_kv * head_dim * 2 * B_kv（docs §9）
         kv_mem_bytes = int(num_layers * kv_heads * head_dim * target_ctx * concurrency)
         kv_mem_bytes *= kv_bytes * 2
     else:
@@ -83,10 +86,12 @@ def estimate_requirements(
 
 
 def _fallback_params(hidden_size: int, num_layers: int) -> float:
+    """当 param_count 缺失时，用 hidden_size * num_layers 粗估。"""
     return hidden_size * num_layers / 1e9
 
 
 def _infer_num_layers(model: ModelConfig) -> int:
+    """根据参数量区间推断层数（经验值，便于匿名模型估算）。"""
     if model.num_hidden_layers:
         return model.num_hidden_layers
     params = model.param_count_b or 8.0
@@ -98,6 +103,7 @@ def _infer_num_layers(model: ModelConfig) -> int:
 
 
 def _infer_num_heads(model: ModelConfig) -> int:
+    """同上，根据参数量取常见头数。"""
     if model.num_attention_heads:
         return model.num_attention_heads
     params = model.param_count_b or 8.0
@@ -109,6 +115,7 @@ def _infer_num_heads(model: ModelConfig) -> int:
 
 
 def _infer_head_dim(model: ModelConfig, heads: int) -> int:
+    """优先使用配置，否则用 hidden_size/heads 取整。"""
     if model.head_dim:
         return model.head_dim
     if model.hidden_size:
@@ -119,6 +126,7 @@ def _infer_head_dim(model: ModelConfig, heads: int) -> int:
 def _target_concurrency(
     model: ModelConfig, preset: ScenarioPreset, estimation: EstimationConfig
 ) -> int:
+    """按照 param_count_b 落在 small/medium/large 决定场景并发。"""
     bucket = _scale_bucket(model.param_count_b or 8.0, estimation)
     return preset.target_concurrency_per_gpu.get(
         bucket, preset.target_concurrency_per_gpu.get("medium", 1)
@@ -142,6 +150,7 @@ def _estimate_compute(
     estimation: EstimationConfig,
     concurrency: int,
 ) -> float:
+    """Compute 需求：2 * 有效参数 * tokens/s，并乘上多模态因子（docs §9）。"""
     target_latency_s = preset.target_latency_ms / 1000.0
     alpha = estimation.alpha_default
     tokens_per_sec = concurrency * (context_len / target_latency_s) * alpha

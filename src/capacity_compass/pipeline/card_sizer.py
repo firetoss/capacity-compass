@@ -1,4 +1,4 @@
-"""Stage 4: determine card counts per GPU candidate."""
+"""Stage 4: determine card counts per GPU candidate（docs §4.4）。"""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ PRECISION_FIELD = {
 
 @dataclass
 class HardwareEvaluation:
+    """Result per GPU：显存/算力卡数、冗余与提示。"""
     gpu: GPUConfig
     cards_mem: int
     cards_compute: Optional[int]
@@ -32,8 +33,10 @@ def size_cards(
     total_mem_bytes: int,
     required_compute_Tx: float,
 ) -> HardwareEvaluation:
+    """Take显存与算力上界，向上取整卡数，见设计 §4.4。"""
     notes: List[str] = []
     mem_per_card = gpu.memory_gb * 1e9
+    # 向上取整：ceil(total / per_card) = -(-a // b)
     cards_mem = max(1, -(-total_mem_bytes // mem_per_card))
 
     perf_field = PRECISION_FIELD.get(eval_precision)

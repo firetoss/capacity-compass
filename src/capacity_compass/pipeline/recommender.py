@@ -1,4 +1,4 @@
-"""Stage 5: rank hardware candidates."""
+"""Stage 5: rank hardware candidates (docs §4.5)."""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ DEPLOY_PRIORITY = {
 
 @dataclass
 class RankedCandidate:
+    """Serializable representation used by后续阶段/输出。"""
     gpu_id: str
     cards_needed: int
     cards_mem: int
@@ -31,6 +32,7 @@ class RankedCandidate:
 
 
 def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandidate]:
+    """Sort by 卡数→价格→成熟度→冗余，符合设计文档 §4.5。"""
     ranked: List[RankedCandidate] = []
     for evaluation in evaluations:
         gpu = evaluation.gpu
@@ -55,9 +57,5 @@ def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandida
 def _sort_key(candidate: RankedCandidate) -> tuple:
     price = candidate.total_price if candidate.total_price is not None else float("inf")
     deploy_rank = DEPLOY_PRIORITY.get(candidate.deploy_support, 6)
-    return (
-        candidate.cards_needed,
-        price,
-        deploy_rank,
-        -candidate.headroom,
-    )
+    # 1) 卡数最少优先  2) 有价格优先（缺失视为 inf）  3) 部署成熟度  4) 冗余越充足越好
+    return (candidate.cards_needed, price, deploy_rank, -candidate.headroom)

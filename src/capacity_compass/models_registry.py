@@ -1,4 +1,8 @@
-"""Registry helpers for model metadata."""
+"""Registry helpers for model metadata.
+
+Provides lookup utilities for model aliases and selecting the best Instruct
+variant given a target上下文长度 (设计文档 §8.2).
+"""
 
 from __future__ import annotations
 
@@ -52,11 +56,11 @@ class ModelsRegistry:
         if not candidates:
             return None
 
-        def score(model: ModelConfig) -> tuple[int, int]:
+        def score(model: ModelConfig) -> tuple[int, int, int]:
             max_ctx = model.max_position_embeddings or 0
             fits = 0 if max_ctx >= target_ctx else 1
             diff = abs(max_ctx - target_ctx)
-            # Primary sort: whether it fits (0 best), secondary: minimal diff, tertiary: larger ctx
+            # Prefer entries that能够覆盖目标上下文，其次是差值越小越好，最后保留更大上线
             return (fits, diff, -max_ctx)
 
         return min(candidates, key=score)

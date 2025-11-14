@@ -14,5 +14,7 @@ def filter_hardware(
     eval_precision: str,
     weights_mem_bytes: int,
 ) -> List[GPUConfig]:
+    """Filter GPU candidates by vendor+precision, retain those fitting权重（docs §4.3）。"""
+
     candidates = registry.filter(vendors=vendors, precision=eval_precision)
     return [gpu for gpu in candidates if gpu.memory_gb * 1e9 >= weights_mem_bytes]

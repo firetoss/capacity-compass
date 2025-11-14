@@ -1,4 +1,4 @@
-"""Registry for GPU hardware specifications."""
+"""Registry for GPU hardware specifications (设计文档 §2.1)."""
 
 from __future__ import annotations
 
@@ -29,6 +29,7 @@ class HardwareRegistry:
         vendors: Optional[Iterable[str]] = None,
         precision: Optional[str] = None,
     ) -> List[GPUConfig]:
+        """Return GPUs matching vendor + precision support from configs."""
         vendor_filter = _normalize_vendor_names(vendors)
         precision_key = precision.lower() if precision else None
         results: List[GPUConfig] = []
