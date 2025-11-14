@@ -23,6 +23,7 @@ class RankedCandidate:
     """Serializable representation used by后续阶段/输出。"""
 
     gpu_id: str
+    gpu_name: str
     cards_needed: int
     cards_mem: int
     cards_compute: Optional[int]
@@ -41,6 +42,7 @@ def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandida
         ranked.append(
             RankedCandidate(
                 gpu_id=gpu.id,
+                gpu_name=gpu.name,
                 cards_needed=evaluation.cards_needed,
                 cards_mem=evaluation.cards_mem,
                 cards_compute=evaluation.cards_compute,
