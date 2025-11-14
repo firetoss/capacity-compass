@@ -10,3 +10,5 @@ pytest_cache/
 
 # OS
 .DS_Store
+
+.env.dev
