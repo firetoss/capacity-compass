@@ -1,0 +1,227 @@
+models:
+  - family: DeepSeek-R1-Distill-Qwen
+    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
+    display_name: DeepSeek-R1-Distill-Qwen-1.5B
+    aliases:
+      ["DeepSeek-R1-Distill-1.5B", "DeepSeek-R1-Distill-Qwen-1.5B-Instruct"]
+    param_count_b: 1.5
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 1536
+    intermediate_size: 8960
+    num_hidden_layers: 28
+    num_attention_heads: 12
+    num_key_value_heads: 2
+    head_dim: 128
+    max_position_embeddings: 131072
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: false
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: []
+    notes: 结构参数来自 HF deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B 官方 config.json；1.5B 参数量来自模型说明。
+    modality: text
+  - family: DeepSeek-R1-Distill-Qwen
+    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+    display_name: DeepSeek-R1-Distill-Qwen-7B
+    aliases: ["DeepSeek-R1-Distill-7B", "DeepSeek-R1-Distill-Qwen-7B-Instruct"]
+    param_count_b: 7.0
+    is_moe: false
+    vocab_size: 152064
+    hidden_size: 3584
+    intermediate_size: 18944
+    num_hidden_layers: 28
+    num_attention_heads: 28
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 131072
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: false
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: []
+    notes: 结构参数来自 HF deepseek-ai/DeepSeek-R1-Distill-Qwen-7B 官方 config.json；7B 参数量来自模型说明。
+    modality: text
+  - family: DeepSeek-R1-Distill-Qwen
+    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+    display_name: DeepSeek-R1-Distill-Qwen-14B
+    aliases:
+      ["DeepSeek-R1-Distill-14B", "DeepSeek-R1-Distill-Qwen-14B-Instruct"]
+    param_count_b: 14.0
+    is_moe: false
+    vocab_size: 152064
+    hidden_size: 5120
+    intermediate_size: 13824
+    num_hidden_layers: 48
+    num_attention_heads: 40
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 131072
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: false
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: []
+    notes: 结构参数来自 HF deepseek-ai/DeepSeek-R1-Distill-Qwen-14B 官方 config.json；14B 参数量来自模型说明。
+    modality: text
+  - family: DeepSeek-R1-Distill-Qwen
+    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+    display_name: DeepSeek-R1-Distill-Qwen-32B
+    aliases:
+      ["DeepSeek-R1-Distill-32B", "DeepSeek-R1-Distill-Qwen-32B-Instruct"]
+    param_count_b: 32.0
+    is_moe: false
+    vocab_size: 152064
+    hidden_size: 5120
+    intermediate_size: 27648
+    num_hidden_layers: 64
+    num_attention_heads: 40
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 131072
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: false
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: []
+    notes: 结构参数来自 HF deepseek-ai/DeepSeek-R1-Distill-Qwen-32B 官方 config.json；32B 参数量来自模型说明。
+    modality: text
+  - family: DeepSeek-R1
+    model_name: deepseek-ai/DeepSeek-R1
+    display_name: DeepSeek-R1
+    aliases: ["DeepSeek R1", "DeepSeek-R1-Base"]
+    param_count_b: 671.0
+    is_moe: true
+    modality: text
+    vocab_size: 129280
+    hidden_size: 7168
+    intermediate_size: 18432
+    num_hidden_layers: 61
+    num_attention_heads: 128
+    num_key_value_heads: 128
+    head_dim: 128
+    max_position_embeddings: 163840
+    rope_scaling:
+      type: yarn
+      factor: 40
+      beta_fast: 32
+      beta_slow: 1
+      mscale: 1.0
+      mscale_all_dim: 1.0
+      original_max_position_embeddings: 4096
+    tie_word_embeddings: false
+    num_experts: 256
+    top_k: 8
+    expert_intermediate_size: 2048
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: null
+    supports_int8: null
+    recommended_kv_dtype: fp8
+    quantization_support: [fp8]
+    notes:
+      结构参数来自 HF deepseek-ai/DeepSeek-R1 官方 config.json；总参数量 671B 与激活参数约 37B 来自
+      DeepSeek-V3/R1 公开号与技术报告；R1 架构与 V3 基本一致，均为 61 层、hidden_size=7168、256 专家、top_k=8；max_position_embeddings=163840
+      与 rope_scaling.yarn 配置来自 HF config；KV/注意力实现采用 MLA，head_dim 等字段仅用于近似估算。
+  - family: DeepSeek-V3
+    model_name: deepseek-ai/DeepSeek-V3
+    display_name: DeepSeek-V3
+    aliases: ["DeepSeek V3", "DeepSeek-V3-Base"]
+    param_count_b: 671.0
+    is_moe: true
+    modality: text
+    vocab_size: 129280
+    hidden_size: 7168
+    intermediate_size: 18432
+    num_hidden_layers: 61
+    num_attention_heads: 128
+    num_key_value_heads: 128
+    head_dim: 128
+    max_position_embeddings: 163840
+    rope_scaling:
+      type: yarn
+      factor: 40
+      beta_fast: 32
+      beta_slow: 1
+      mscale: 1.0
+      mscale_all_dim: 1.0
+      original_max_position_embeddings: 4096
+    tie_word_embeddings: false
+    num_experts: 256
+    top_k: 8
+    expert_intermediate_size: 2048
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: null
+    supports_int8: null
+    recommended_kv_dtype: fp8
+    quantization_support: [fp8]
+    notes:
+      结构参数来自 HF deepseek-ai/DeepSeek-V3 官方 config.json；总参数量 671B/激活参数约 37B 来自 DeepSeek-V3
+      技术报告与公开资料；MoE 配置：256 路由专家 + 1 shared expert，top_k=8；max_position_embeddings=163840
+      与 rope_scaling.yarn 配置来自 HF config；KV/注意力实现采用 MLA，head_dim 等字段仅用于近似估算。
+  - family: DeepSeek-VL
+    model_name: deepseek-ai/DeepSeek-VL-7B
+    display_name: DeepSeek-VL-7B-Instruct
+    aliases: ["DeepSeek-VL-7B", "DeepSeek-VL-7B-Base"]
+    param_count_b: 7.0
+    is_moe: true
+    modality: text_vision
+    vocab_size: null
+    hidden_size: null
+    intermediate_size: null
+    num_hidden_layers: null
+    num_attention_heads: null
+    num_key_value_heads: null
+    head_dim: null
+    max_position_embeddings: 32768
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: null
+    supports_bf16: true
+    supports_fp16: null
+    supports_int8: null
+    recommended_kv_dtype: null
+    quantization_support: []
+    notes: 多模态视觉+文本模型，结构信息参考 DeepSeek-VL 文档；当前仅用于标记多模态场景，hidden_size/层数等未在此版本中补全，需查阅官方仓库。

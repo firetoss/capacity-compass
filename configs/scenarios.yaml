@@ -1,0 +1,47 @@
+# 业务场景预设配置
+# 用于在用户未指定场景时，自动对 chat / rag / writer 等场景进行假设与算力估算。
+
+chat:
+  label: "对话型助手"
+  description: "用户与模型轮流对话，输入中等篇幅文本，输出多轮回答。"
+  default_context_len: 8192
+  target_latency_ms: 1000
+  target_concurrency_per_gpu:
+    small_model: 16
+    medium_model: 8
+    large_model: 4
+  compute_multiplier:
+    text: 1.0
+    text_vision: 1.1
+    text_audio: 1.1
+    omni: 1.2
+
+rag:
+  label: "检索增强问答（RAG）"
+  description: "先对文档或向量库进行检索，再在较长上下文上进行问答。"
+  default_context_len: 32768
+  target_latency_ms: 2000
+  target_concurrency_per_gpu:
+    small_model: 8
+    medium_model: 4
+    large_model: 2
+  compute_multiplier:
+    text: 1.0
+    text_vision: 1.3
+    text_audio: 1.2
+    omni: 1.5
+
+writer:
+  label: "长文生成"
+  description: "根据提示生成较长的文章、报告或营销文案。"
+  default_context_len: 8192
+  target_latency_ms: 3000
+  target_concurrency_per_gpu:
+    small_model: 4
+    medium_model: 2
+    large_model: 2
+  compute_multiplier:
+    text: 1.0
+    text_vision: 1.0
+    text_audio: 1.0
+    omni: 1.1

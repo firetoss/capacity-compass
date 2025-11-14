@@ -1,0 +1,225 @@
+gpus:
+  - id: nvidia_t4_16g
+    name: NVIDIA T4 16GB
+    vendor: NVIDIA
+    family: Turing
+    category: datacenter
+    memory_gb: 16
+    memory_type: GDDR6
+    memory_bw_gbps: 320.0
+    precision_support:
+      fp16: true
+      bf16: false
+      fp8: false
+      int8: true
+    perf:
+      fp16_tflops: 65.0
+      int8_tops: 130.0
+    power_w: 70
+    pricing:
+      currency: CNY
+      price: 16999.0
+      source: user_table_消费级显卡
+    deploy_support: entry_level_only
+    deploy_note: 针对小模型与低并发推理生态成熟；不支持 FP8；16GB 显存限制较大，建议仅作入门/边缘场景使用。
+    notes: 显存、带宽、功耗与价格来自用户表格；FP16/INT8算力来自 NVIDIA 官方数据表。
+  - id: nvidia_v100_16g
+    name: NVIDIA V100 16GB PCIe
+    vendor: NVIDIA
+    family: Volta
+    category: datacenter
+    memory_gb: 16
+    memory_type: HBM2
+    memory_bw_gbps: 900.0
+    precision_support:
+      fp16: true
+      bf16: false
+      fp8: false
+      int8: true
+    perf:
+      fp16_tflops: 125.0
+      int8_tops: 250.0
+    power_w: 250
+    pricing:
+      currency: CNY
+      price: 59999.0
+      source: user_table_消费级显卡
+    deploy_support: good
+    deploy_note: 数据中心通用推理/训练成熟；不支持 FP8；16GB 显存对中大模型受限，推荐较小模型或分布式方案。
+    notes: 带宽与算力按 NVIDIA V100 官方数据表（16GB 版）；价格来自用户表格。
+  - id: nvidia_a10_24g
+    name: NVIDIA A10 24GB
+    vendor: NVIDIA
+    family: Ampere
+    category: datacenter
+    memory_gb: 24
+    memory_type: GDDR6
+    memory_bw_gbps: 600.0
+    precision_support:
+      fp16: true
+      bf16: true
+      fp8: false
+      int8: true
+    perf:
+      fp16_tflops: 125.0
+      int8_tops: 250.0
+    power_w: 150
+    pricing:
+      currency: CNY
+      price: 21999.0
+      source: user_table_消费级显卡
+    deploy_support: good
+    deploy_note: Ampere 数据中心推理常见选择，TensorRT/ONNX/Transformers 生态成熟；支持 BF16/FP16/INT8；无官方 FP8。
+    notes: 显存/带宽/功耗/价格来自用户表格；BF16/FP16/INT8 算力按 NVIDIA A10 官方 datasheet（未计 sparsity）。
+  - id: nvidia_a100_40g
+    name: NVIDIA A100 40GB
+    vendor: NVIDIA
+    family: Ampere
+    category: datacenter
+    memory_gb: 40
+    memory_type: HBM2
+    memory_bw_gbps: 1555.0
+    precision_support:
+      fp16: true
+      bf16: true
+      fp8: false
+      int8: true
+    perf:
+      fp16_tflops: 312.0
+      int8_tops: 624.0
+    power_w: 250
+    pricing:
+      currency: CNY
+      price: 100000.0
+      source: user_table_消费级显卡
+    deploy_support: excellent
+    deploy_note: 行业主力卡，推理/训练生态最成熟之一；支持 BF16/FP16/INT8；无官方 FP8；40GB 显存需注意上下文与并发规划。
+    notes: A100 40GB 版本参数按 NVIDIA 官方数据表；用户表格中的 FP16/TensorFloat32 略有不同，这里以官方为准。
+  - id: nvidia_l20_48g
+    name: NVIDIA L20 48GB
+    vendor: NVIDIA
+    family: Ada Lovelace
+    category: datacenter
+    memory_gb: 48
+    memory_type: GDDR6
+    memory_bw_gbps: 864.0
+    precision_support:
+      fp16: true
+      bf16: true
+      fp8: true
+      int8: true
+    perf:
+      fp16_tflops: 119.5
+      int8_tops: 239.0
+    power_w: 275
+    pricing:
+      currency: CNY
+      price: null
+      source: user_table_消费级显卡_未提供
+    deploy_support: excellent
+    deploy_note: NVIDIA 官方 NIM 文档列出 L20 的 FP8 推理性能数据，生态成熟，可用于 FP8/BF16/FP16/INT8 推理；48GB GDDR6。
+    notes: 显存/带宽/功耗来自用户表格与公开资料；FP16/INT8 算力参考 GPU data sheet 汇总与厂商宣传值。价格未公开。
+  - id: nvidia_h20_96g
+    name: NVIDIA H20 96GB
+    vendor: NVIDIA
+    family: Hopper
+    category: datacenter
+    memory_gb: 96
+    memory_type: HBM3
+    memory_bw_gbps: 4000.0
+    precision_support:
+      fp16: true
+      bf16: true
+      fp8: true
+      int8: true
+    perf:
+      fp16_tflops: 148.0
+      int8_tops: 296.0
+    power_w: 400
+    pricing:
+      currency: CNY
+      price: null
+      source: 未公开
+    deploy_support: excellent
+    deploy_note: NVIDIA 官方 NIM 文档中包含 H20 的 FP8/BF16 推理性能数据；作为中国区 Hopper 规格，生态与工具链由 NVIDIA 维护。
+    notes: H20 规格以官方渠道为主（NIM 文档与发布说明）；部分媒体给出带宽与功耗等信息，但详细 datasheet 公开性有限，具体峰值以厂商资料为准。
+  - id: huawei_ascend_910b_64g
+    name: Huawei Ascend 910B 64GB
+    vendor: Huawei
+    family: Ascend
+    category: domestic_npu
+    memory_gb: 64
+    memory_type: HBM2e
+    memory_bw_gbps: 1600.0
+    precision_support:
+      fp16: true
+      bf16: false
+      fp8: false
+      int8: true
+    perf:
+      fp16_tflops: 320.0
+      int8_tops: 800.0
+    power_w: 310
+    pricing:
+      currency: CNY
+      price: null
+      source: 未公开
+    deploy_support: test
+    deploy_note: 需基于 CANN/昇腾生态适配；主流开源栈兼容性/算子成熟度与性能需与华为/整机厂商确认；FP8 未公开明确支持。
+    notes:
+      单卡 64GB HBM2e，显存带宽≈1.6TB/s，INT8 理论算力约 800 TOPS，FP16 稠密算力公开资料区间约 320–376 TFLOPS；功耗资料存在
+      310–400W 差异。本记录采用 64GB / 1.6TB/s / 320 TFLOPS FP16 / 800 TOPS INT8 / 310W 作为保守规划值，详情以华为官方最新
+      datasheet 为准。
+  - id: kunlunxin_p800_96g
+    name: Baidu Kunlunxin P800 96GB
+    vendor: Baidu
+    family: Kunlun
+    category: domestic_npu
+    memory_gb: 96
+    memory_type: HBM3
+    memory_bw_gbps: null
+    precision_support:
+      fp16: true
+      bf16: false
+      fp8: false
+      int8: true
+    perf:
+      fp16_tflops: 345.0
+      int8_tops: null
+    power_w: 400
+    pricing:
+      currency: CNY
+      price: null
+      source: 未公开
+    deploy_support: test
+    deploy_note: 官方与研报称支持 8bit 推理，具体 INT8/FP8 峰值与框架适配度需向昆仑芯确认；生态仍在完善中。
+    notes:
+      第三代昆仑芯 P800，96GB HBM3 显存，官方与券商研报普遍给出的 FP16 算力约 345 TFLOPS；显存带宽与 INT8/FP8
+      等详细规格目前缺少一致的权威公开数据，这里记为未知。已知 P800 官方强调对 DeepSeek-V3/R1 等 MoE 模型训练/推理有完整适配、支持 8bit
+      推理，但具体 INT8 TOPS 数值请以昆仑芯正式资料为准。
+  - id: huawei_atlas_300i_duo_48g
+    name: Huawei Atlas 300I Duo 48GB
+    vendor: Huawei
+    family: Ascend
+    category: domestic_npu
+    memory_gb: 48
+    memory_type: HBM2e
+    memory_bw_gbps: 408.0
+    precision_support:
+      fp16: true
+      bf16: false
+      fp8: false
+      int8: null
+    perf:
+      fp16_tflops: 140.0
+      int8_tops: null
+    power_w: 150
+    pricing:
+      currency: CNY
+      price: null
+      source: 未公开
+    deploy_support: test
+    deploy_note: 基于昇腾系列的数据中心/边缘推理卡，具体算子成熟度/框架兼容性需结合业务模型验证与厂商确认。
+    notes:
+      Atlas 300I Duo（基于昇腾 300 系列），单卡 FP16 算力约 140TFLOPS，48GB HBM 显存；另有 96GB 版本未单独建条目。INT8/BF16/FP8
+      详细规格官方未明确公开，这里保守记为未知，建议在实际招投标/采购前向华为或整机厂商确认。

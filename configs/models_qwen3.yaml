@@ -1,0 +1,561 @@
+models:
+  # Instruct (long-context) examples
+  - family: Qwen3
+    model_name: Qwen/Qwen3-4B-Instruct-2507
+    display_name: Qwen3-4B-Instruct-2507
+    aliases: ["Qwen3-4B-Instruct"]
+    modality: text
+    param_count_b: 4.0
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 2560
+    intermediate_size: 9728
+    num_hidden_layers: 36
+    num_attention_heads: 32
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling: null
+    tie_word_embeddings: true
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-4B-Instruct-2507 的 config.json；max_position_embeddings=262144。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-30B-A3B-Instruct-2507
+    display_name: Qwen3-30B-A3B-Instruct-2507
+    aliases: ["Qwen3-30B-A3B-Instruct"]
+    modality: text
+    param_count_b: 30.0
+    is_moe: true
+    vocab_size: 151936
+    hidden_size: 2048
+    intermediate_size: 6144
+    num_hidden_layers: 48
+    num_attention_heads: 32
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: 128
+    top_k: 8
+    expert_intermediate_size: 768
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-30B-A3B-Instruct-2507 的 config.json；max_position_embeddings=262144。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-235B-A22B-Instruct-2507
+    display_name: Qwen3-235B-A22B-Instruct-2507
+    aliases: ["Qwen3-235B-A22B-Instruct"]
+    modality: text
+    param_count_b: 235.0
+    is_moe: true
+    vocab_size: 151936
+    hidden_size: 4096
+    intermediate_size: 12288
+    num_hidden_layers: 94
+    num_attention_heads: 64
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: 128
+    top_k: 8
+    expert_intermediate_size: 1536
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-235B-A22B-Instruct-2507 的 config.json；max_position_embeddings=262144。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-0.6B
+    display_name: Qwen3-0.6B
+    aliases: ["Qwen3-0.6B-Instruct", "Qwen/Qwen3-0.6B"]
+    modality: text
+    param_count_b: 0.6
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 1024
+    intermediate_size: 3072
+    num_hidden_layers: 28
+    num_attention_heads: 16
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-0.6B；官方提供 FP8 仓库 Qwen/Qwen3-0.6B-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-1.7B
+    display_name: Qwen3-1.7B
+    aliases: ["Qwen3-1.7B-Instruct", "Qwen/Qwen3-1.7B"]
+    modality: text
+    param_count_b: 1.7
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 2048
+    intermediate_size: 6144
+    num_hidden_layers: 28
+    num_attention_heads: 16
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-1.7B；官方提供 FP8 仓库 Qwen/Qwen3-1.7B-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-4B
+    display_name: Qwen3-4B
+    aliases: ["Qwen3-4B-Instruct", "Qwen/Qwen3-4B"]
+    modality: text
+    param_count_b: 4.0
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 2560
+    intermediate_size: 9728
+    num_hidden_layers: 36
+    num_attention_heads: 32
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8, awq_4bit]
+    notes: 结构参数来自 HF Qwen/Qwen3-4B；官方提供 FP8 仓库 Qwen/Qwen3-4B-FP8；官方 AWQ 仓库 Qwen/Qwen3-4B-AWQ。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-8B
+    display_name: Qwen3-8B-Instruct
+    aliases: ["Qwen3-8B", "Qwen/Qwen3-8B-Instruct", "Qwen3 8B"]
+    modality: text
+    param_count_b: 8.0
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 4096
+    intermediate_size: 12288
+    num_hidden_layers: 36
+    num_attention_heads: 32
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8, awq_4bit]
+    notes: 结构参数来自 HF Qwen/Qwen3-8B；官方提供 FP8 仓库 Qwen/Qwen3-8B-FP8；官方 AWQ 仓库 Qwen/Qwen3-8B-AWQ。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-14B
+    display_name: Qwen3-14B
+    aliases: ["Qwen3-14B-Instruct", "Qwen/Qwen3-14B"]
+    modality: text
+    param_count_b: 14.8
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 5120
+    intermediate_size: 17408
+    num_hidden_layers: 40
+    num_attention_heads: 40
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8, awq_4bit]
+    notes: 结构参数来自 HF Qwen/Qwen3-14B；官方提供 FP8 仓库 Qwen/Qwen3-14B-FP8；官方 AWQ 仓库 Qwen/Qwen3-14B-AWQ。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-32B
+    display_name: Qwen3-32B
+    aliases: ["Qwen3-32B-Instruct", "Qwen/Qwen3-32B"]
+    modality: text
+    param_count_b: 32.0
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 5120
+    intermediate_size: 25600
+    num_hidden_layers: 64
+    num_attention_heads: 64
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8, awq_4bit]
+    notes: 结构参数来自 HF Qwen/Qwen3-32B；官方提供 FP8 仓库 Qwen/Qwen3-32B-FP8；官方 AWQ 仓库 Qwen/Qwen3-32B-AWQ。
+
+  # MoE text models
+  - family: Qwen3
+    model_name: Qwen/Qwen3-30B-A3B
+    display_name: Qwen3-30B-A3B
+    aliases: ["Qwen3-30B-A3B-Instruct", "Qwen/Qwen3-30B-A3B"]
+    modality: text
+    param_count_b: 30.0
+    is_moe: true
+    vocab_size: 151936
+    hidden_size: 2048
+    intermediate_size: 6144
+    num_hidden_layers: 48
+    num_attention_heads: 32
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: 128
+    top_k: 8
+    expert_intermediate_size: 768
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-30B-A3B；官方提供 FP8 仓库 Qwen/Qwen3-30B-A3B-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-235B-A22B
+    display_name: Qwen3-235B-A22B
+    aliases: ["Qwen3-235B-A22B-Instruct", "Qwen/Qwen3-235B-A22B"]
+    modality: text
+    param_count_b: 235.0
+    is_moe: true
+    vocab_size: 151936
+    hidden_size: 4096
+    intermediate_size: 12288
+    num_hidden_layers: 94
+    num_attention_heads: 64
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 40960
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: 128
+    top_k: 8
+    expert_intermediate_size: 1536
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-235B-A22B；官方提供 FP8 仓库 Qwen/Qwen3-235B-A22B-FP8。
+
+  # Qwen3-VL (vision+text)
+  - family: Qwen3
+    model_name: Qwen/Qwen3-VL-2B-Instruct
+    display_name: Qwen3-VL-2B-Instruct
+    aliases: ["Qwen3 VL 2B Instruct"]
+    modality: text_vision
+    param_count_b: null
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 2048
+    intermediate_size: 6144
+    num_hidden_layers: 28
+    num_attention_heads: 16
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling:
+      mrope_interleaved: true
+      mrope_section: [24, 20, 20]
+      rope_type: default
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-VL-2B-Instruct（text_config）；官方提供 FP8 仓库 Qwen/Qwen3-VL-2B-Instruct-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-VL-4B-Instruct
+    display_name: Qwen3-VL-4B-Instruct
+    aliases: ["Qwen3 VL 4B Instruct"]
+    modality: text_vision
+    param_count_b: null
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 2560
+    intermediate_size: 9728
+    num_hidden_layers: 36
+    num_attention_heads: 32
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling:
+      mrope_interleaved: true
+      mrope_section: [24, 20, 20]
+      rope_type: default
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-VL-4B-Instruct（text_config）；官方提供 FP8 仓库 Qwen/Qwen3-VL-4B-Instruct-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-VL-8B-Instruct
+    display_name: Qwen3-VL-8B-Instruct
+    aliases: ["Qwen3 VL 8B Instruct"]
+    modality: text_vision
+    param_count_b: 9.0
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 4096
+    intermediate_size: 12288
+    num_hidden_layers: 36
+    num_attention_heads: 32
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling:
+      mrope_interleaved: true
+      mrope_section: [24, 20, 20]
+      rope_type: default
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-VL-8B-Instruct（text_config）；官方提供 FP8 仓库 Qwen/Qwen3-VL-8B-Instruct-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-VL-30B-A3B-Instruct
+    display_name: Qwen3-VL-30B-A3B-Instruct
+    aliases: ["Qwen3 VL 30B A3B Instruct"]
+    modality: text_vision
+    param_count_b: 30.0
+    is_moe: true
+    vocab_size: 151936
+    hidden_size: 2048
+    intermediate_size: 6144
+    num_hidden_layers: 48
+    num_attention_heads: 32
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling:
+      mrope_interleaved: true
+      mrope_section: [24, 20, 20]
+      rope_type: default
+    tie_word_embeddings: false
+    num_experts: 128
+    top_k: 8
+    expert_intermediate_size: 768
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-VL-30B-A3B-Instruct（text_config）；官方提供 FP8 仓库 Qwen/Qwen3-VL-30B-A3B-Instruct-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-VL-32B-Instruct
+    display_name: Qwen3-VL-32B-Instruct
+    aliases: ["Qwen3 VL 32B Instruct"]
+    modality: text_vision
+    param_count_b: null
+    is_moe: false
+    vocab_size: 151936
+    hidden_size: 5120
+    intermediate_size: 25600
+    num_hidden_layers: 64
+    num_attention_heads: 64
+    num_key_value_heads: 8
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling:
+      mrope_interleaved: true
+      mrope_section: [24, 20, 20]
+      rope_type: default
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-VL-32B-Instruct（text_config）；官方提供 FP8 仓库 Qwen/Qwen3-VL-32B-Instruct-FP8。
+
+  - family: Qwen3
+    model_name: Qwen/Qwen3-VL-235B-A22B-Instruct
+    display_name: Qwen3-VL-235B-A22B-Instruct
+    aliases: ["Qwen3 VL 235B A22B Instruct"]
+    modality: text_vision
+    param_count_b: 235.0
+    is_moe: true
+    vocab_size: 151936
+    hidden_size: 4096
+    intermediate_size: 12288
+    num_hidden_layers: 94
+    num_attention_heads: 64
+    num_key_value_heads: 4
+    head_dim: 128
+    max_position_embeddings: 262144
+    rope_scaling:
+      mrope_interleaved: true
+      mrope_section: [24, 20, 20]
+      rope_type: default
+    tie_word_embeddings: false
+    num_experts: 128
+    top_k: 8
+    expert_intermediate_size: 1536
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: true
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: bfloat16
+    quantization_support: [fp8]
+    notes: 结构参数来自 HF Qwen/Qwen3-VL-235B-A22B-Instruct（text_config）；官方提供 FP8 仓库 Qwen/Qwen3-VL-235B-A22B-Instruct-FP8。
+
+  # Qwen3-Omni (limited details)
+  - family: Qwen3
+    model_name: Qwen/Qwen3-Omni-30B-A3B-Instruct
+    display_name: Qwen3-Omni-30B-A3B-Instruct
+    aliases: ["Qwen3 Omni 30B A3B Instruct"]
+    modality: omni
+    param_count_b: 30.0
+    is_moe: true
+    vocab_size: null
+    hidden_size: null
+    intermediate_size: null
+    num_hidden_layers: null
+    num_attention_heads: null
+    num_key_value_heads: null
+    head_dim: null
+    max_position_embeddings: null
+    rope_scaling: null
+    tie_word_embeddings: false
+    num_experts: null
+    top_k: null
+    expert_intermediate_size: null
+    torch_dtype: bfloat16
+    use_cache: true
+    supports_fp8: null
+    supports_bf16: true
+    supports_fp16: true
+    supports_int8: null
+    recommended_kv_dtype: null
+    notes: 多模态（含音频/视频）细节未完全公开；量化发布情况待确认。

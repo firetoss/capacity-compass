@@ -1,0 +1,37 @@
+# Estimation constants and defaults (loaded read-only by the service)
+
+dtype_bytes:
+  fp16: 2
+  bf16: 2
+  fp8: 1
+  int8: 1
+
+# Overhead on top of weights + KV (allocator, activations, misc)
+overhead_ratio_default: 0.15
+
+# Throughput heuristic factor for token/s derivation
+alpha_default: 0.25
+
+# Effective parameter fraction for MoE compute (memory still uses total params)
+moe_effective_factor:
+  default: 0.08
+  DeepSeek-R1: 0.06
+  DeepSeek-V3: 0.06
+  Qwen3-A3B: 0.10
+
+# Model scale thresholds (by params in billions)
+scale_thresholds_b:
+  small_max: 10
+  medium_max: 50
+
+# KV dtype selection order when not explicitly specified by a model
+kv_dtype_fallback_order:
+  - recommended
+  - eval_precision
+  - bf16
+  - fp16
+  - fp8
+# Optional knobs (not used by default)
+# avg_output_tokens: null
+# beta_decode: null
+
