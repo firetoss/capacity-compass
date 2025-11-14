@@ -9,7 +9,7 @@
 
 1. **以设计文档为唯一设计真相源**
 
-   - 设计文档位于 `docs/` 目录（例如：`docs/capacity_compass_design_spec_final.md`）。
+   - 设计文档位于 `docs/` 目录（例如：`docs/capacity_compass_design_spec.md`）。
    - 在编写或修改代码前，必须先完整阅读并理解设计文档。
    - 任何业务逻辑、数据结构或公式，如与设计文档冲突，以设计文档为准。
 
@@ -49,7 +49,7 @@
 
 2. **项目结构（建议）**
 
-   代码目录建议为 `src/sagescale/`：
+   代码目录建议为 `src/capacity_compass/`：
 
    - `config_loader.py`          —— 统一加载与校验 YAML。
    - `models_registry.py`        —— 模型规格查询封装。
@@ -102,6 +102,24 @@
      - 加载一组测试请求；
      - 调用评估接口；
      - 对返回结构中的关键字段进行断言。
+   - 强制要求（核心实现必须有单测）：
+     - M1–M3 模块（`config_loader`、三个 registry、`normalizer`、`requirements`、`hardware_filter`、`card_sizer`、`recommender`、`evaluation_builder`）的公开函数，均需最小单元测试覆盖；缺失单测的改动不得合并。
+     - 单测文件命名：`tests/test_<module>.py`；用例命名清晰、可读、可重复执行；避免依赖网络。
+     - 端到端测试必须存在并可通过（允许对数值作区间/存在性断言，不要求精确到常数）。
+     - 日志与异常路径需有至少 1 个用例覆盖（例如：模型未命中走“匿名 dense”、上下文被截断的提示）。
+
+8. **提交前检查（必须通过）**
+
+   - 本地运行 `pytest -q` 全部通过；
+   - 不使用 `print()`；日志通过 `logging`；
+   - 未改动 `configs/*.yaml` 的事实数据（读取只读原则）；
+   - 返回结构与 `docs/capacity_compass_design_spec.md` 一致（含可选 `quick_answer`、`scenes.*.sales_summary/guide` 字段的兼容性）；
+   - 若接入第七步 LLM 生成，仅读取 `prompts/sales_summary_zh.txt`，并向外部 LLM 仅传“精简 JSON 子集”，不得泄露完整业务负载。
+
+9. **研发任务拆分**
+
+   - 以 `docs/dev_tasks.md` 为执行清单的唯一基线；按 M0→M6 顺序推进；
+   - 任何新增模块/依赖，需先更新设计文档/任务清单，再编码。
 
 ---
 

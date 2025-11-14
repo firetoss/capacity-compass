@@ -326,7 +326,7 @@ writer:
 
 ## 4. 评估流水线（7 阶段）
 
-流水线模块位于 `src/sagescale/pipeline/`，阶段划分保持与旧版一致，做了少量细节收敛。
+流水线模块位于 `src/capacity_compass/pipeline/`，阶段划分保持与旧版一致，做了少量细节收敛。
 
 ### 4.1 阶段 1：请求归一化（normalizer）
 
@@ -657,3 +657,93 @@ headroom            = (total_mem_available - M_req) / total_mem_available
   - `sales_summary.switch_notice`：如从基座切换为 Instruct/长上下文变体时的说明。
   - `sales_summary.tips`：提示（上下文截断、价格未公开、请联系厂商确认等）。
   - `sales_summary.confidence`：`"low"`（默认）。
+
+---
+
+## 9. 附录：计算公式与变量定义（固化）
+
+通用约定
+- 字节换算：显存按十进制 GB 计，`1 GB = 1e9 bytes`。
+- 数据类型字节数：从 `configs/estimation.yaml.dtype_bytes` 读取（默认：bf16=2、fp16=2、fp8=1、int8=1）。
+- 上下文：`final_context = min(request.max_context_len 或 场景默认, model.max_position_embeddings)`。
+- 模型规模分档：`scale_thresholds_b`（默认 small_max=10、medium_max=50），用于选择场景并发 `target_concurrency_per_gpu`。
+
+符号
+- `param_count_b`：模型总参数量（B）。
+- `P = param_count_b * 1e9`：参数量（个）。
+- `B_w`：权重精度字节数；用评估精度（eval_precision）对应的字节数。
+- `B_kv`：KV 精度字节数；优先 `model.recommended_kv_dtype`，否则按 `kv_dtype_fallback_order` 选择并取字节数。
+- `L = num_hidden_layers`。
+- `H_kv = num_key_value_heads`（缺失则用 `num_attention_heads`）。
+- `D_head = head_dim`（缺失则用 `hidden_size / num_attention_heads` 取整）。
+- `T = final_context`。
+- `C`：场景并发（按分档从 `target_concurrency_per_gpu` 选）。
+- `overhead_ratio`：从 `estimation.yaml.overhead_ratio_default` 取（默认 0.15）。
+- `alpha`：吞吐估算系数，从 `estimation.yaml.alpha_default` 取（默认 0.25）。
+- `moe_effective_factor`：MoE 有效参数系数（按 family 或 default，从 `estimation.yaml` 取）。
+- `compute_multiplier`：多模态算力乘子（从 `configs/scenarios.yaml` 取）。
+
+显存估算
+1) 权重显存
+```
+weights_mem_bytes = P * B_w
+```
+2) KV 显存（结构缺失时允许记为 0，并在 notes 标注“仅按权重显存估算”）
+```
+kv_mem_bytes = C * T * L * H_kv * D_head * 2 * B_kv
+# 2 表示 K/V 两份
+```
+3) 总显存
+```
+total_mem_bytes = (weights_mem_bytes + kv_mem_bytes) * (1 + overhead_ratio)
+```
+
+算力估算（统一以“万亿次/秒”Tx/s 为单位）
+1) 目标 tokens/s（经验）
+```
+target_latency_s = target_latency_ms / 1000.0
+S_tokens        = C * (T / target_latency_s) * alpha
+```
+2) 有效参数（MoE 仅影响算力，不影响显存）
+```
+effective_params_b = param_count_b * moe_effective_factor   # is_moe 时；否则为 param_count_b 本身
+```
+3) 需求算力（Tx/s）
+```
+required_compute_Tx = (2 * effective_params_b * 1e9 * S_tokens) / 1e12
+# 2*P 为每 token 近似计算量；单位对齐为 “万亿次/秒”
+```
+4) 多模态乘子
+```
+if model.modality != "text":
+    required_compute_Tx *= compute_multiplier[model.modality]
+```
+
+GPU 单卡算力（与评估精度匹配）
+```
+if eval_precision in {"bf16","fp16","fp8"}:
+    F_gpu = gpu.perf[eval_precision + "_tflops"]    # Tx/s
+elif eval_precision == "int8":
+    F_gpu = gpu.perf["int8_tops"]                   # Tx/s
+else:
+    F_gpu = null
+```
+
+卡数估算与冗余
+```
+M_req = total_mem_bytes
+M_gpu = gpu.memory_gb * 1e9
+cards_mem     = ceil(M_req / M_gpu)
+
+cards_compute = (F_gpu is not null) ? ceil(required_compute_Tx / F_gpu) : null
+cards_needed  = max(cards_mem, cards_compute or 0)
+
+total_mem_available = cards_needed * M_gpu
+headroom            = (total_mem_available - M_req) / total_mem_available
+```
+
+异常与回退
+- 结构缺失（VL/Omni 等）：`kv_mem_bytes=0`，notes 标注“仅按权重显存估算”。
+- 单卡算力缺失：`cards_compute=null`，仍输出基于显存的 `cards_needed`，notes 标注“仅显存约束”。
+- 上下文超限：按模型上限截断并提示。
+- Instruct/长上下文切换：选择“上下文差距最小”的变体并提示 `switch_notice`。
