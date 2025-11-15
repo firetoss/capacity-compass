@@ -14,7 +14,7 @@ try:  # pragma: no cover - optional extra
 except ImportError:  # pragma: no cover - handled via runtime guard
     OpenAI = None  # type: ignore
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_PROMPT = PROJECT_ROOT / "prompts" / "sales_summary_zh.txt"
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = "qwen/qwen3-8b"
