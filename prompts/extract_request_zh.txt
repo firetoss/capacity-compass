@@ -31,6 +31,14 @@
 - 不要猜测；字段不存在就给 null。
 - 数字统一为阿拉伯数字；context_len 必须是整数（不要带单位/小数点）。
 
+模型名标准化（为便于后端匹配，务必遵守）：
+- 将连续空格、下划线、斜线统一为连字符“-”（仅在英文/数字/连词之间）：
+  例：“qwen3 8b instruct”→“Qwen3-8B-Instruct”，“DeepSeek R1”→“DeepSeek-R1”。
+- 已知中文别名→英文家族：
+  “深度求索”→“DeepSeek”；“通义千问”/“千问”→“Qwen”。
+- 保留用户写明的后缀（如 Instruct/Omni/VL 等），不要自行添加或删除。
+- 若家族不在 {Qwen, DeepSeek} 之中（例如 Llama 等），请将 model 输出为 null（避免后端不支持的模型导致报错）。
+
 示例（帮助理解，不要包含在输出中）：
 用户：“用Qwen3-8B推理，16K上下文，BF16，单卡可以吗？”
 → {"model":"Qwen3-8B","precision":"bf16","context_len":16000}
@@ -38,3 +46,8 @@
 用户：“普通聊天，不确定用哪个模型，8千字就够了，精度随意。”
 → {"model":null,"precision":null,"context_len":8000}
 
+ 用户：“qwen3 8b instruct，FP8，32K。”
+ → {"model":"Qwen3-8B-Instruct","precision":"fp8","context_len":32000}
+
+ 用户：“深度求索V3，fp16，4k。”
+ → {"model":"DeepSeek-V3","precision":"fp16","context_len":4000}

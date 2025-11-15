@@ -10,6 +10,7 @@ path defaulting to prompts/extract_request_zh.txt.
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,6 +54,8 @@ def extract_fields(
     Raises ExtractorError when the OpenAI client is unavailable or the response
     does not contain valid JSON per contract.
     """
+    logger.info("extract_fields invoked via OpenRouter client")
+
     if OpenAI is None:  # pragma: no cover
         raise ExtractorError("openai package is not installed; install with llm extra")
 
@@ -120,4 +123,13 @@ def _parse_json(text: str) -> Dict[str, Any]:
             obj["context_len"] = int(obj["context_len"])  # type: ignore[call-overload]
         except Exception as exc:  # pragma: no cover
             raise ExtractorError(f"context_len not integer: {exc}")
+    logger.debug(
+        "extracted fields model=%s precision=%s ctx=%s",
+        obj.get("model"),
+        obj.get("precision"),
+        obj.get("context_len"),
+    )
     return obj
+
+
+logger = logging.getLogger(__name__)
