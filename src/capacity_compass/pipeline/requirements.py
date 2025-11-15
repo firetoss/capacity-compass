@@ -21,7 +21,12 @@ class RequirementResult:
     kv_mem_bytes: int
     total_mem_bytes: int
     required_compute_Tx: float
+    concurrency: int
     notes: List[str] = field(default_factory=list)
+    throughput_tps: float | None = None
+    tokens_per_sec_session: float | None = None
+    per_session_Tx: float | None = None
+    divisible_heads: int | None = None
 
 
 def estimate_requirements(
@@ -79,6 +84,26 @@ def estimate_requirements(
     )
 
     required_compute = _estimate_compute(model, target_ctx, preset, estimation, concurrency)
+    # 业务友好的吞吐（tokens/s），以及单会话计算需求
+    tokens_per_sec_session = None
+    per_session_Tx = None
+    throughput_tps = None
+    if preset.avg_output_tokens:
+        target_latency_s = max(preset.target_latency_ms / 1000.0, 1e-6)
+        alpha = estimation.alpha_default
+        tokens_per_sec_session = (preset.avg_output_tokens / target_latency_s) * alpha
+        throughput_tps = concurrency * tokens_per_sec_session
+        # per-session Tx (考虑多模态乘子)
+        eff_params_b = model.param_count_b or 8.0
+        if model.is_moe:
+            factor = estimation.moe_effective_factor.get(
+                model.family, estimation.moe_effective_factor.get("default", 1.0)
+            )
+            eff_params_b *= factor
+        modality = model.modality or "text"
+        multiplier = preset.compute_multiplier.get(modality, 1.0)
+        per_session_Tx = (2 * eff_params_b * 1e9 * tokens_per_sec_session) / 1e12
+        per_session_Tx *= multiplier
 
     notes = normalized.notes + kv_notes
     if context_clamped:
@@ -109,7 +134,12 @@ def estimate_requirements(
         kv_mem_bytes=kv_mem_bytes,
         total_mem_bytes=total_mem_bytes,
         required_compute_Tx=required_compute,
+        concurrency=concurrency,
         notes=notes,
+        throughput_tps=throughput_tps,
+        tokens_per_sec_session=tokens_per_sec_session,
+        per_session_Tx=per_session_Tx,
+        divisible_heads=kv_heads if kv_heads else (num_heads or None),
     )
 
 
@@ -178,10 +208,24 @@ def _estimate_compute(
     estimation: EstimationConfig,
     concurrency: int,
 ) -> float:
-    """Compute 需求：2 * 有效参数 * tokens/s，并乘上多模态因子（docs §9）。"""
-    target_latency_s = preset.target_latency_ms / 1000.0
+    """Compute 需求（以生成阶段为主）：
+    compute_Tx ≈ 2 * 有效参数 * (并发 × 单会话 tokens/s) / 1e3。
+
+    - 单会话 tokens/s 取自场景的 avg_output_tokens 与目标延迟，再乘以 alpha（保守系数）。
+    - 如 avg_output_tokens 缺失，退化到 prefill 上界：context_len / 目标延迟，并记录为保守上界。
+    """
+    target_latency_s = max(preset.target_latency_ms / 1000.0, 1e-6)
     alpha = estimation.alpha_default
-    tokens_per_sec = concurrency * (context_len / target_latency_s) * alpha
+    # Prefer decode-based tokens/s; fallback to prefill upper bound if missing
+    if preset.avg_output_tokens:
+        tokens_per_sec_session = (preset.avg_output_tokens / target_latency_s) * alpha
+    else:
+        tokens_per_sec_session = (context_len / target_latency_s) * alpha
+        logger.warning(
+            "avg_output_tokens missing for preset=%s; using prefill-bound tokens/s upper bound",
+            preset.label,
+        )
+    tokens_per_sec = concurrency * tokens_per_sec_session
 
     effective_params = model.param_count_b or 8.0
     if model.is_moe:

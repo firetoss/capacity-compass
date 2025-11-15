@@ -15,6 +15,7 @@ def _dummy_requirement(context_len: int, clamped: bool = False) -> RequirementRe
         kv_mem_bytes=5,
         total_mem_bytes=15,
         required_compute_Tx=1.0,
+        concurrency=2,
         notes=[],
     )
 
@@ -23,6 +24,7 @@ def _dummy_candidate(name: str, price: float | None = 1000.0) -> RankedCandidate
     return RankedCandidate(
         gpu_id=name.lower(),
         gpu_name=name,
+        vendor="NVIDIA",
         cards_needed=1,
         cards_mem=1,
         cards_compute=1,
@@ -52,7 +54,10 @@ def test_evaluation_builder_generates_quick_answer():
 
     chat_summary = evaluation["scenes"]["chat"]["sales_summary"]
     assert chat_summary["primary"]["device"] == "GPU-A"
+    assert "并发" not in chat_summary["primary"]["reason"]
+    assert "并发" in chat_summary["primary"]["concurrency_text"]
     assert evaluation["quick_answer"]["primary"]["device"] == "GPU-A"
+    assert evaluation["quick_answer"]["concurrency"] == 2
     assert evaluation["scenes"]["chat"]["guide"]["title"] == "对话问答"
     assert evaluation["disclaimers"]
 

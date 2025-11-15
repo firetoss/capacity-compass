@@ -101,6 +101,7 @@ class ScenarioPreset(BaseModel):
     target_latency_ms: int
     target_concurrency_per_gpu: Dict[str, int]
     compute_multiplier: Dict[str, float]
+    avg_output_tokens: Optional[int] = None
 
 
 class EstimationConfig(BaseModel):
@@ -110,3 +111,16 @@ class EstimationConfig(BaseModel):
     moe_effective_factor: Dict[str, float] = Field(default_factory=dict)
     scale_thresholds_b: Dict[str, float] = Field(default_factory=dict)
     kv_dtype_fallback_order: List[str] = Field(default_factory=list)
+    avg_output_tokens_default: int | None = None
+    allowed_shard_sizes: List[int] = Field(default_factory=lambda: [1, 2, 4, 8])
+    # Tensor parallel soft constraints (可配置关闭)
+    tp_require_divisible: bool = True
+    tp_check_kv_heads_first: bool = True
+    tp_preferred_orders: List[int] = Field(default_factory=lambda: [8, 4, 2, 1])
+    # Optional per-scene model suggestion rules (non-binding)
+    # example:
+    #   model_suggestion_rules:
+    #     chat: { min_params_b: 7, max_params_b: 9 }
+    #     rag: { min_params_b: 14, max_params_b: 32 }
+    #     writer: { min_params_b: 14, max_params_b: 32 }
+    model_suggestion_rules: Dict[str, Dict[str, float]] = Field(default_factory=dict)

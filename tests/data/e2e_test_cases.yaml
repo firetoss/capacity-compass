@@ -7,13 +7,13 @@
 # - 目前主要用于“功能正确性”验证，后续可以根据真实压测数据进行调整和扩展；
 # - expectations.assertions 中的 type 由测试代码解释实现。
 
-- id: qwen3_8b_chat_fp16_nvidia
-  description: "Qwen3-8B-Instruct, 8K chat, fp16, 仅 NVIDIA 设备"
+- id: qwen3_8b_chat_fp16_nvidia_huawei
+  description: "Qwen3-8B-Instruct, 8K chat, fp16, NVIDIA+Huawei，包含国产卡候选"
   request:
     model_name: "Qwen/Qwen3-8B-Instruct"
     max_context_len: 8192
     precision: "fp16"
-    vendor_scope: ["NVIDIA"]
+    vendor_scope: ["NVIDIA", "Huawei"]
   expectations:
     status: "ok"
     assertions:

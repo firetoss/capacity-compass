@@ -10,7 +10,7 @@ dtype_bytes:
 overhead_ratio_default: 0.15
 
 # Throughput heuristic factor for token/s derivation
-alpha_default: 0.25
+alpha_default: 0.15
 
 # Effective parameter fraction for MoE compute (memory still uses total params)
 moe_effective_factor:
@@ -31,7 +31,23 @@ kv_dtype_fallback_order:
   - bf16
   - fp16
   - fp8
+# Allowed per-instance shard sizes for model parallel (rounding odd card counts)
+allowed_shard_sizes: [1, 2, 4, 8]
+tp_require_divisible: true
+tp_check_kv_heads_first: true
+tp_preferred_orders: [8, 4, 2, 1]
 # Optional knobs (not used by default)
 # avg_output_tokens: null
 # beta_decode: null
 
+# Non-binding model suggestion ranges per scene (by params in billions)
+model_suggestion_rules:
+  chat:
+    min_params_b: 7
+    max_params_b: 9
+  rag:
+    min_params_b: 14
+    max_params_b: 32
+  writer:
+    min_params_b: 14
+    max_params_b: 32

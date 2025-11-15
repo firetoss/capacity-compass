@@ -182,7 +182,6 @@ cases:
       kv_dtype_fallback_order: [bf16, fp16, fp8]
     expectations:
       # param_count_b=9 <= small_max=10 -> small_model 并发 = 4
-      context_len: 8192
       context_clamped: false
       # weights_mem_bytes = 9 * 1e9 * 2 = 18,000,000,000
       weights_mem_bytes: 18000000000

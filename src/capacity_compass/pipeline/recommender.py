@@ -27,6 +27,7 @@ class RankedCandidate:
 
     gpu_id: str
     gpu_name: str
+    vendor: str
     cards_needed: int
     cards_mem: int
     cards_compute: Optional[int]
@@ -34,6 +35,13 @@ class RankedCandidate:
     total_price: Optional[float]
     deploy_support: Optional[str]
     notes: List[str]
+    # Optional per-GPU perf annotations
+    concurrency_per_gpu: Optional[int] = None
+    throughput_tokens_per_sec: Optional[float] = None
+    shards: Optional[int] = None
+    replicas: Optional[int] = None
+    # Display helpers (optional; filled by ranker for convenience)
+    memory_gb: Optional[float] = None
 
 
 def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandidate]:
@@ -46,6 +54,7 @@ def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandida
             RankedCandidate(
                 gpu_id=gpu.id,
                 gpu_name=gpu.name,
+                vendor=gpu.vendor,
                 cards_needed=evaluation.cards_needed,
                 cards_mem=evaluation.cards_mem,
                 cards_compute=evaluation.cards_compute,
@@ -53,6 +62,11 @@ def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandida
                 total_price=price,
                 deploy_support=gpu.deploy_support,
                 notes=evaluation.notes,
+                concurrency_per_gpu=evaluation.concurrency_per_gpu,
+                throughput_tokens_per_sec=evaluation.throughput_tokens_per_sec,
+                shards=evaluation.shards,
+                replicas=evaluation.replicas,
+                memory_gb=gpu.memory_gb,
             )
         )
 
@@ -72,7 +86,6 @@ def rank_candidates(evaluations: List[HardwareEvaluation]) -> List[RankedCandida
 
 
 def _sort_key(candidate: RankedCandidate) -> tuple:
-    price = candidate.total_price if candidate.total_price is not None else float("inf")
     deploy_rank = DEPLOY_PRIORITY.get(candidate.deploy_support, 6)
-    # 1) 卡数最少优先  2) 有价格优先（缺失视为 inf）  3) 部署成熟度  4) 冗余越充足越好
-    return (candidate.cards_needed, price, deploy_rank, -candidate.headroom)
+    # 1) 卡数最少优先  2) 部署成熟度  3) 冗余越充足越好
+    return (candidate.cards_needed, deploy_rank, -candidate.headroom)

@@ -27,6 +27,7 @@ class RuntimeSettings:
     llm_base_url: str
     llm_timeout_seconds: float
     http_proxy: Optional[str]
+    autoswitch_for_scenes: bool
 
 
 def _env_bool(value: str | None, default: bool) -> bool:
@@ -73,6 +74,7 @@ def load_runtime_settings() -> RuntimeSettings:
     base_url = os.getenv("CAPACITYCOMPASS_LLM_BASE_URL", DEFAULT_LLM_BASE_URL)
     timeout = _env_float(os.getenv("CAPACITYCOMPASS_LLM_TIMEOUT"), 30.0)
     http_proxy = os.getenv("CAPACITYCOMPASS_HTTP_PROXY")
+    autoswitch = _env_bool(os.getenv("CAPACITYCOMPASS_AUTOSWITCH_FOR_SCENES"), True)
     return RuntimeSettings(
         enable_llm_summary=enable_summary,
         log_level=log_level,
@@ -80,6 +82,7 @@ def load_runtime_settings() -> RuntimeSettings:
         llm_base_url=base_url,
         llm_timeout_seconds=timeout,
         http_proxy=http_proxy,
+        autoswitch_for_scenes=autoswitch,
     )
 
 

@@ -23,6 +23,8 @@ dev-dependencies = [
   "mypy>=1.11",
   "pre-commit>=3.8",
   "types-PyYAML>=6.0",
+  "playwright>=1.56",
+  "beautifulsoup4>=4.14.2",
 ]
 cache-dir = ".uv_cache"
 index-url = "https://mirrors.ustc.edu.cn/pypi/web/simple"
