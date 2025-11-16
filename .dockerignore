@@ -1,0 +1,16 @@
+.git
+.gitignore
+.venv
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.uv_cache
+__pycache__
+*.pyc
+tests
+docs/*.md
+server.log
+*.tar
+*.tgz
+*.zip
+*.log
