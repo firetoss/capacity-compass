@@ -72,6 +72,37 @@ PYTHONPATH=src uv run -- python scripts/extract_batch.py \
   --out docs/extract_preview.md
 ```
 
+## Deploy (Docker Offline, x86_64)
+
+Build offline image tar (linux/amd64) using USTC PyPI mirror:
+```bash
+bash scripts/build_docker_offline.sh
+# outputs: capacity_compass_latest_amd64.tar
+```
+
+Load and run on server (port 9050):
+```bash
+docker load -i capacity_compass_latest_amd64.tar
+# prepare runtime envs only (example)
+cat > .env.runtime <<'ENV'
+LOG_LEVEL=INFO
+# OPENROUTER_API_KEY=xxxxx   # only if LLM summary needed
+# CAPACITYCOMPASS_ENABLE_SUMMARY=true
+# CAPACITYCOMPASS_AUTOSWITCH_FOR_SCENES=true
+ENV
+
+docker run -d --name capacity-compass -p 9050:9050 --env-file .env.runtime capacity-compass:latest
+```
+
+Smoke test (avoid local proxy):
+```bash
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+curl -s http://127.0.0.1:9050/openapi.json | head -n 1
+curl -s -X POST http://127.0.0.1:9050/api/llm/capacity/evaluate \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"Qwen3-4B","max_context_len":16000,"precision":"fp16"}' | jq '.quick_answer.items[0]'
+```
+
 ## Scenes & Assumptions
 
 - 中位目标：chat=1200ms、rag=2500ms、writer=4000ms；RAG 默认上下文 64k；writer 输出 1000
@@ -83,6 +114,17 @@ PYTHONPATH=src uv run -- python scripts/extract_batch.py \
 - OpenRouter 超时：增大 `--timeout`（30–45s）与 `--gap`（6–8s）；确保 `--skip-proxy` 或移除 `CAPACITYCOMPASS_HTTP_PROXY`。
 - 提取 model 匹配不上：抽取提示词已内置最小标准化（空格/连字符/中文家族名）；若 `model=null`，可在前端使用默认模型（如 Qwen3‑8B‑Instruct）。
 - “并发/吞吐都一样”：未补齐硬件 perf（bf16/fp8/int8）时会走“统一假设”，表格已由后端渲染并在段首提示；待 perf 回填后差异会自然拉开。
+
+## Response Size / Compact Mode（建议）
+
+当前响应包含 `raw_evaluation`、全量 `ranked` 列表与后端渲染 `markdown`，用于销售/技术双场景。若需更精简：
+
+- 在请求体中新增可选开关（建议）：
+  - `compact: true` → 仅返回 `quick_answer.items`、`scenes.*.sales_summary.table_md`、可选 `markdown`；不返回 `raw_evaluation`
+  - `top_k: 3` → 限制主表与场景表格条目数
+  - `include_raw: false`、`include_markdown: true/false`
+
+如需我落地“Compact Mode”，请确认默认行为（是否默认 compact）与 `top_k` 默认值。
 
 ## Dev
 
